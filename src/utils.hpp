@@ -115,7 +115,7 @@ inline void *prealloc(void *old, int size) {
     free(old);
     return NULL;
   }
-  p = (void *)prealloc(old, size);
+  p = (void *)realloc(old, size);
   if(p == NULL) {
     fprintf(stderr, "Could not allocate memory.\n");
     errexit();
@@ -131,7 +131,7 @@ inline void *pmalloc(int size)
   if (size <= 0) {
     return NULL;
   }
-  p = (void *)pmalloc(size);
+  p = (void *)malloc(size);
   if(p == NULL) {
     fprintf(stderr, "Could not allocate memory.\n");
     errexit();

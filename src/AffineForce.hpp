@@ -6,6 +6,7 @@
 class AffineForce : public VectorForce {
 public:
   AffineForce(Eigen::Matrix3d A, Eigen::Vector3d w);
+  AffineForce();
   void init(SystemInterface &s) {
     F.reserve(s.npart());
   };

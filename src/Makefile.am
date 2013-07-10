@@ -99,7 +99,8 @@ libEspresso_a_SOURCES = \
 	ghmc.cpp ghmc.hpp \
 	SystemInterface.hpp \
 	EspressoSystemInterface.cpp EspressoSystemInterface.hpp \
-	ForceIterator.cpp ForceIterator.hpp
+	ForceIterator.cpp ForceIterator.hpp \
+	AffineForce.cpp AffineForce.hpp
 
 # nonbonded potentials and forces
 libEspresso_a_SOURCES += \

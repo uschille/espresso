@@ -61,6 +61,7 @@
 #include "ghmc.hpp"
 
 #include "AffineForce.hpp"
+#include "ForceIterator.hpp"
 
 /************************************************
  * DEFINES
@@ -327,7 +328,17 @@ void integrate_vv(int n_steps)
     prepare_collision_queue();
 #endif
 
+    ForceIterator FI;
+    AffineForce A;
+
+    FI.addMethod(&A);
+
+    FI.init();
+    FI.run();
+
     force_calc();
+
+    FI.addForces();
 
     //VIRTUAL_SITES distribute forces
 #ifdef VIRTUAL_SITES

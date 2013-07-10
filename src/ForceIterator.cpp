@@ -1,6 +1,8 @@
 #include "ForceIterator.hpp"
 #include "cells.hpp"
 
+#include <stdio.h>
+
 void ForceIterator::addMethod(OneParticleForce *m) {
   methods.push_back(m);
 }
@@ -21,6 +23,8 @@ void ForceIterator::addForces() {
   Cell *cell;
   Particle *p;
   int i,c,np;
+
+  puts("Adding forces.");
 
   F.reserve(System.npart());
 

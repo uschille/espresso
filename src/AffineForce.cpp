@@ -1,4 +1,9 @@
 #include "AffineForce.hpp"
+AffineForce::AffineForce() {
+  m_A = Eigen::Matrix3d::Identity();
+  m_w = Eigen::Vector3d(1.,2.,3.);
+}
+
 AffineForce::AffineForce(Eigen::Matrix3d A, Eigen::Vector3d w) {
   m_A = A;
   m_w = w;
