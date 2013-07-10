@@ -789,7 +789,7 @@ void realloc_ia_params(int nsize)
   if (nsize <= n_particle_types)
     return;
 
-  new_params = (IA_parameters *) malloc(nsize*nsize*sizeof(IA_parameters));
+  new_params = (IA_parameters *) pmalloc(nsize*nsize*sizeof(IA_parameters));
   if (ia_params) {
     /* if there is an old field, copy entries and delete */
     for (i = 0; i < nsize; i++)
@@ -823,7 +823,7 @@ void realloc_tf_params(int nsize)
   if (nsize <= n_particle_types)
     return;
 
-  new_params = (TF_parameters *) malloc(nsize*sizeof(TF_parameters));
+  new_params = (TF_parameters *) pmalloc(nsize*sizeof(TF_parameters));
   if (tf_params) {
     /* if there is an old field, copy entries and delete */
     for (i = 0; i < nsize; i++)
@@ -878,7 +878,7 @@ void make_bond_type_exist(int type)
     return;
   }
   /* else allocate new memory */
-  bonded_ia_params = (Bonded_ia_parameters *)realloc(bonded_ia_params,
+  bonded_ia_params = (Bonded_ia_parameters *)prealloc(bonded_ia_params,
 						     ns*sizeof(Bonded_ia_parameters));
   /* set bond types not used as undefined */
   for (i = n_bonded_ia; i < ns; i++)

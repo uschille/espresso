@@ -218,23 +218,23 @@ double  magnetic_dipolar_direct_sum_calculations(int force_flag, int energy_flag
   if(n_nodes!=1) {fprintf(stderr,"error: magnetic Direct Sum is just for one cpu .... \n"); exit(1);}
   if(!(force_flag) && !(energy_flag) ) {fprintf(stderr," I don't know why you call dawaanr_caclulations with all flags zero \n"); return 0;}
 
-  x = (double *) malloc(sizeof(double)*n_total_particles);
-  y = (double *) malloc(sizeof(double)*n_total_particles);
-  z = (double *) malloc(sizeof(double)*n_total_particles);
+  x = (double *) pmalloc(sizeof(double)*n_total_particles);
+  y = (double *) pmalloc(sizeof(double)*n_total_particles);
+  z = (double *) pmalloc(sizeof(double)*n_total_particles);
 
-  mx = (double *) malloc(sizeof(double)*n_total_particles);
-  my = (double *) malloc(sizeof(double)*n_total_particles);
-  mz = (double *) malloc(sizeof(double)*n_total_particles);
+  mx = (double *) pmalloc(sizeof(double)*n_total_particles);
+  my = (double *) pmalloc(sizeof(double)*n_total_particles);
+  mz = (double *) pmalloc(sizeof(double)*n_total_particles);
  
   if(force_flag) {
-    fx = (double *) malloc(sizeof(double)*n_total_particles);
-    fy = (double *) malloc(sizeof(double)*n_total_particles);
-    fz = (double *) malloc(sizeof(double)*n_total_particles);
+    fx = (double *) pmalloc(sizeof(double)*n_total_particles);
+    fy = (double *) pmalloc(sizeof(double)*n_total_particles);
+    fz = (double *) pmalloc(sizeof(double)*n_total_particles);
  
 #ifdef ROTATION   
-    tx = (double *) malloc(sizeof(double)*n_total_particles);
-    ty = (double *) malloc(sizeof(double)*n_total_particles);
-    tz = (double *) malloc(sizeof(double)*n_total_particles);
+    tx = (double *) pmalloc(sizeof(double)*n_total_particles);
+    ty = (double *) pmalloc(sizeof(double)*n_total_particles);
+    tz = (double *) pmalloc(sizeof(double)*n_total_particles);
 #endif  
   }
  

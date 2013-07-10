@@ -206,6 +206,7 @@ void lb_realloc_particles_gpu(){
   /**-----------------------------------------------------*/
   /** allocating of the needed memory for several structs */
   /**-----------------------------------------------------*/
+
   lbpar_gpu.your_seed = (unsigned int)i_random(max_ran);
 
   LB_TRACE (fprintf(stderr,"test your_seed %u \n", lbpar_gpu.your_seed));
@@ -321,7 +322,7 @@ int lb_lbnode_set_extforce_GPU(int ind[3], double f[3])
     ind[0] + ind[1]*lbpar_gpu.dim_x + ind[2]*lbpar_gpu.dim_x*lbpar_gpu.dim_y;
 
   size_t  size_of_extforces = (n_extern_nodeforces+1)*sizeof(LB_extern_nodeforce_gpu);
-  host_extern_nodeforces = (LB_extern_nodeforce_gpu*) realloc(host_extern_nodeforces, size_of_extforces);
+  host_extern_nodeforces = (LB_extern_nodeforce_gpu*) prealloc(host_extern_nodeforces, size_of_extforces);
   
   host_extern_nodeforces[n_extern_nodeforces].force[0] = (float)f[0];
   host_extern_nodeforces[n_extern_nodeforces].force[1] = (float)f[1];

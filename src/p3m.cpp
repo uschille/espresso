@@ -323,8 +323,8 @@ void   p3m_init() {
     p3m_calc_send_mesh();
     P3M_TRACE(p3m_p3m_print_local_mesh(p3m.local_mesh));
     P3M_TRACE(p3m_p3m_print_send_mesh(p3m.sm));
-    p3m.send_grid = (double *) realloc(p3m.send_grid, sizeof(double)*p3m.sm.max);
-    p3m.recv_grid = (double *) realloc(p3m.recv_grid, sizeof(double)*p3m.sm.max);
+    p3m.send_grid = (double *) prealloc(p3m.send_grid, sizeof(double)*p3m.sm.max);
+    p3m.recv_grid = (double *) prealloc(p3m.recv_grid, sizeof(double)*p3m.sm.max);
 
     /* fix box length dependent constants */
     p3m_scaleby_box_l();
@@ -343,7 +343,7 @@ void   p3m_init() {
 				p3m.local_mesh.dim,p3m.local_mesh.margin,
 				p3m.params.mesh, p3m.params.mesh_off,
 				&p3m.ks_pnum);
-    p3m.ks_mesh = (double *) realloc(p3m.ks_mesh, ca_mesh_size*sizeof(double));
+    p3m.ks_mesh = (double *) prealloc(p3m.ks_mesh, ca_mesh_size*sizeof(double));
     
 
     P3M_TRACE(fprintf(stderr,"%d: p3m.rs_mesh ADR=%p\n",this_node,p3m.rs_mesh));
@@ -496,7 +496,7 @@ void p3m_interpolate_charge_assignment_function()
 
   for (i=0; i < p3m.params.cao; i++) {
     /* allocate memory for interpolation array */
-    p3m.int_caf[i] = (double *) realloc(p3m.int_caf[i], sizeof(double)*(2*p3m.params.inter+1));
+    p3m.int_caf[i] = (double *) prealloc(p3m.int_caf[i], sizeof(double)*(2*p3m.params.inter+1));
 
     /* loop over all interpolation points */
     for (j=-p3m.params.inter; j<=p3m.params.inter; j++)
@@ -985,8 +985,8 @@ void p3m_realloc_ca_fields(int newsize)
 
   P3M_TRACE(fprintf(stderr,"%d: p3m_realloc_ca_fields: old_size=%d -> new_size=%d\n",this_node,p3m.ca_num,newsize));
   p3m.ca_num = newsize;
-  p3m.ca_frac = (double *)realloc(p3m.ca_frac, p3m.params.cao3*p3m.ca_num*sizeof(double));
-  p3m.ca_fmp  = (int *)realloc(p3m.ca_fmp, p3m.ca_num*sizeof(int));
+  p3m.ca_frac = (double *)prealloc(p3m.ca_frac, p3m.params.cao3*p3m.ca_num*sizeof(double));
+  p3m.ca_fmp  = (int *)prealloc(p3m.ca_fmp, p3m.ca_num*sizeof(int));
     
 } 
 #endif
@@ -995,9 +995,9 @@ void p3m_calc_meshift(void)
 {
     int i;
     
-    p3m.meshift_x = (double *) realloc(p3m.meshift_x, p3m.params.mesh[0]*sizeof(double));
-    p3m.meshift_y = (double *) realloc(p3m.meshift_y, p3m.params.mesh[1]*sizeof(double));
-    p3m.meshift_z = (double *) realloc(p3m.meshift_z, p3m.params.mesh[2]*sizeof(double));
+    p3m.meshift_x = (double *) prealloc(p3m.meshift_x, p3m.params.mesh[0]*sizeof(double));
+    p3m.meshift_y = (double *) prealloc(p3m.meshift_y, p3m.params.mesh[1]*sizeof(double));
+    p3m.meshift_z = (double *) prealloc(p3m.meshift_z, p3m.params.mesh[2]*sizeof(double));
 
     p3m.meshift_x[0] = p3m.meshift_y[0] = p3m.meshift_z[0] = 0;
     for (i = 1; i <= p3m.params.mesh[RX]/2; i++) {
@@ -1024,7 +1024,7 @@ void p3m_calc_differential_operator()
   int i,j;
 
   for(i=0;i<3;i++) {
-    p3m.d_op[i] = (double*)realloc(p3m.d_op[i], p3m.params.mesh[i]*sizeof(double));
+    p3m.d_op[i] = (double*)prealloc(p3m.d_op[i], p3m.params.mesh[i]*sizeof(double));
     p3m.d_op[i][0] = 0;
     p3m.d_op[i][p3m.params.mesh[i]/2] = 0.0;
 
@@ -1049,7 +1049,7 @@ void p3m_calc_influence_function_force()
         size *= fft.plan[3].new_mesh[i];
         end[i] = fft.plan[3].start[i] + fft.plan[3].new_mesh[i];
     }
-    p3m.g_force = (double *) realloc(p3m.g_force, size*sizeof(double));
+    p3m.g_force = (double *) prealloc(p3m.g_force, size*sizeof(double));
 
     for(n[0]=fft.plan[3].start[0]; n[0]<end[0]; n[0]++) {
         for(n[1]=fft.plan[3].start[1]; n[1]<end[1]; n[1]++) {
@@ -1128,7 +1128,7 @@ void p3m_calc_influence_function_energy()
       start[i] = fft.plan[3].start[i];
     }
 
-    p3m.g_energy = (double *) realloc(p3m.g_energy, size*sizeof(double));
+    p3m.g_energy = (double *) prealloc(p3m.g_energy, size*sizeof(double));
     ind = 0;
 
 
@@ -2005,8 +2005,8 @@ void p3m_calc_kspace_stress (double* stress) {
         int jx, jy, jz, i, ind = 0;
         // ordering after fourier transform
         const int x = 2, y = 0, z = 1;
-        node_k_space_stress = (double*)malloc(9*sizeof(double));
-        k_space_stress = (double*)malloc(9*sizeof(double));
+        node_k_space_stress = (double*)pmalloc(9*sizeof(double));
+        k_space_stress = (double*)pmalloc(9*sizeof(double));
 
         for (i = 0; i < 9; i++) {
             node_k_space_stress[i] = 0.0;

@@ -169,9 +169,9 @@ int tclcommand_iccp3m_parse_normals(Tcl_Interp *interp,int n_ic, char *string) {
   char *arg, *token;
   int scan_succes;
   arg=strdup(string);
-  iccp3m_cfg.nvectorx = (double*) realloc(iccp3m_cfg.nvectorx,sizeof(double)*(iccp3m_cfg.n_ic));
-  iccp3m_cfg.nvectory = (double*) realloc(iccp3m_cfg.nvectory,sizeof(double)*(iccp3m_cfg.n_ic));
-  iccp3m_cfg.nvectorz = (double*) realloc(iccp3m_cfg.nvectorz,sizeof(double)*(iccp3m_cfg.n_ic));
+  iccp3m_cfg.nvectorx = (double*) prealloc(iccp3m_cfg.nvectorx,sizeof(double)*(iccp3m_cfg.n_ic));
+  iccp3m_cfg.nvectory = (double*) prealloc(iccp3m_cfg.nvectory,sizeof(double)*(iccp3m_cfg.n_ic));
+  iccp3m_cfg.nvectorz = (double*) prealloc(iccp3m_cfg.nvectorz,sizeof(double)*(iccp3m_cfg.n_ic));
   const char opening_bracket[] = "{";
   const char closing_bracket[] = "}";
   const char space[] = " ";
@@ -237,7 +237,7 @@ int tclcommand_iccp3m_parse_double_list(Tcl_Interp *interp, int n_ic, char *stri
   float temp;
 
   size= n_ic;
-  numbers = (double*)malloc((size)*sizeof(double));
+  numbers = (double*)pmalloc((size)*sizeof(double));
 
   cp = strdup(string);                /* Make writable copy.  */
   token = strtok (cp, delimiters);
@@ -262,17 +262,17 @@ int tclcommand_iccp3m_parse_double_list(Tcl_Interp *interp, int n_ic, char *stri
 
   switch(flag) {
     case ICCP3M_AREA: 
-      iccp3m_cfg.areas = (double*) realloc(iccp3m_cfg.areas, (size)*sizeof(double)); 
+      iccp3m_cfg.areas = (double*) prealloc(iccp3m_cfg.areas, (size)*sizeof(double)); 
       for( i = 0 ; i < size ; i++ )  
         iccp3m_cfg.areas[i]=numbers[i];
       break;
     case ICCP3M_EPSILON:
-      iccp3m_cfg.ein = (double*) realloc(iccp3m_cfg.ein,(size)*sizeof(double));
+      iccp3m_cfg.ein = (double*) prealloc(iccp3m_cfg.ein,(size)*sizeof(double));
       for( i = 0 ; i < size; i++)  
         iccp3m_cfg.ein[i]=numbers[i];
       break;
     case ICCP3M_SIGMA:
-      iccp3m_cfg.sigma = (double*) realloc(iccp3m_cfg.sigma,(size)*sizeof(double));
+      iccp3m_cfg.sigma = (double*) prealloc(iccp3m_cfg.sigma,(size)*sizeof(double));
       for( i = 0 ; i < size; i++)  {
         iccp3m_cfg.sigma[i]=numbers[i];
       }

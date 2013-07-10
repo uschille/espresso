@@ -303,7 +303,7 @@ void updatePartCfg(int bonds_flag)
   if(partCfg)
     return;
 
-  partCfg = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  partCfg = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   if (bonds_flag != WITH_BONDS)
     mpi_get_particles(partCfg, NULL);
   else
@@ -333,7 +333,7 @@ int sortPartCfg()
   if (n_total_particles != max_seen_particle + 1)
     return 0;
 
-  sorted = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  sorted = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   for(i = 0; i < n_total_particles; i++)
     memcpy(&sorted[partCfg[i].p.identity], &partCfg[i], sizeof(Particle));
   free(partCfg);
@@ -359,7 +359,7 @@ void realloc_local_particles(int part)
   if (part >= max_local_particles) {
     /* round up part + 1 in granularity PART_INCREMENT */
     max_local_particles = PART_INCREMENT*((part + PART_INCREMENT)/PART_INCREMENT);
-    local_particles = (Particle **)realloc(local_particles, sizeof(Particle *)*max_local_particles);
+    local_particles = (Particle **)prealloc(local_particles, sizeof(Particle *)*max_local_particles);
   }
 }
 
@@ -372,7 +372,7 @@ static void realloc_particle_node(int part)
   if (part >= max_particle_node) {
     /* round up part + 1 in granularity PART_INCREMENT */
     max_particle_node = PART_INCREMENT*((part + PART_INCREMENT)/PART_INCREMENT);
-    particle_node = (int *)realloc(particle_node, sizeof(int)*max_particle_node);
+    particle_node = (int *)prealloc(particle_node, sizeof(int)*max_particle_node);
   }
 }
 
@@ -420,7 +420,7 @@ int realloc_particlelist(ParticleList *l, int size)
     /* round up */
     l->max = PART_INCREMENT*((size + PART_INCREMENT - 1)/PART_INCREMENT);
   if (l->max != old_max)
-    l->part = (Particle *) realloc(l->part, sizeof(Particle)*l->max);
+    l->part = (Particle *) prealloc(l->part, sizeof(Particle)*l->max);
   return l->part != old_start;
 }
 
@@ -810,7 +810,7 @@ int set_particle_type(int part, int type)
 
 #ifdef GRANDCANONICAL 
 // check if the particle exists already and the type is changed, then remove it from the list which contains it
-  Particle *cur_par = (Particle *) malloc( sizeof(Particle) );
+  Particle *cur_par = (Particle *) pmalloc( sizeof(Particle) );
   if ( Type_array_init ) {
 	  if ( cur_par != (Particle *) 0 ) {
 		  if ( get_particle_data(part, cur_par) != ES_ERROR ) {
@@ -1589,7 +1589,7 @@ void auto_exclusion(int distance)
 
   /* setup bond partners and distance list. Since we need to identify particles via their identity,
      we use a full sized array */
-  partners    = (IntList*)malloc((max_seen_particle + 1)*sizeof(IntList));
+  partners    = (IntList*)pmalloc((max_seen_particle + 1)*sizeof(IntList));
   for (p = 0; p <= max_seen_particle; p++)
     init_intlist(&partners[p]);
 
@@ -1660,7 +1660,7 @@ int init_gc(void){
 	Type.max_entry = 0;
 	Index.max_entry = 0;
 
-	type_array = (TypeList *) malloc(sizeof(TypeList) * number_of_type_lists);
+	type_array = (TypeList *) pmalloc(sizeof(TypeList) * number_of_type_lists);
 	if ( type_array == (TypeList *) 0 )
 		return ES_ERROR;
 
@@ -1690,7 +1690,7 @@ int init_type_array(int type){
 	//reallocate the array that holds the particle type and points to the type index used for the type_list
 	
 	if ( type >= Index.max_entry ) { 
-		Index.type= (int * ) realloc( (void *) Index.type, (type+1)*sizeof(int));
+		Index.type= (int * ) prealloc( (void *) Index.type, (type+1)*sizeof(int));
 		Index.max_entry = type + 1;
 	}
 	for (int i=0; i<Type.max_entry; i++) 
@@ -1721,12 +1721,12 @@ int init_type_array(int type){
 			max_size= floor( (double ) max_size/2.0);
 		}
 		// now the array is shrinked to at least 4 times the highest entry
-		type_array[Index.type[type]].id_list= (int *) realloc( (void *) type_array[Index.type[type]].id_list, sizeof(int)*2*max_size);
+		type_array[Index.type[type]].id_list= (int *) prealloc( (void *) type_array[Index.type[type]].id_list, sizeof(int)*2*max_size);
 		type_array[Index.type[type]].max_entry = t_c;
 		type_array[Index.type[type]].cur_size = max_size*2;
 	} else {
 		//no particles of the given type were found, so leave array size fixed at a reasonable start entry 64 ints in this case
-		type_array[Index.type[type]].id_list= (int *) realloc( (void *) type_array[Index.type[type]].id_list, sizeof(int)*64);
+		type_array[Index.type[type]].id_list= (int *) prealloc( (void *) type_array[Index.type[type]].id_list, sizeof(int)*64);
 		type_array[Index.type[type]].max_entry = t_c;
 		type_array[Index.type[type]].cur_size = 64;
 	}
@@ -1816,7 +1816,7 @@ int update_particle_array(int type) {
 int reallocate_global_type_list(int size){
 	if (size <= 0 ) 
 		return ES_ERROR;
-	type_array = (TypeList *) realloc( (void *) type_array, sizeof(TypeList)*size);
+	type_array = (TypeList *) prealloc( (void *) type_array, sizeof(TypeList)*size);
 	number_of_type_lists=size;
 	if ( type_array == (TypeList *) 0)
 		return ES_ERROR;
@@ -1871,7 +1871,7 @@ int find_particle_type_id(int type, int *id, int *in_id ){
 }
 
 //static int *find_particle_type(int type){
-//	int *temp=(int *) malloc( sizeof(int)*2);
+//	int *temp=(int *) pmalloc( sizeof(int)*2);
 //	if (temp == (int *) 0)
 //		return ES_ERROR;
 //	int temp[1] = i_random ( type_array[type_index_of_type[type]].max_entry );
@@ -1914,7 +1914,7 @@ int delete_particle_of_type(int type) {
 }
 
 int add_particle_to_list(int part_id, int type){
-//	Particle *cur_par = (Particle *) malloc(sizeof(Particle));
+//	Particle *cur_par = (Particle *) pmalloc(sizeof(Particle));
 //	if (cur_par == (Particle *) 0 )
 //		return ES_ERROR;
 //	if (get_particle_data(part_id, cur_par) == ES_ERROR ) 
@@ -2036,7 +2036,7 @@ int number_of_particles_with_type(int type, int *number){
 //		if (plist->part[i]->type == type){
 //			list->list->identifier=plist->part[i]->identity;
 //			list->type=type;
-//			list->list->next=malloc( sizeof (struct type_list) );
+//			list->list->next=pmalloc( sizeof (struct type_list) );
 //			list->max++;
 //		}
 //	}

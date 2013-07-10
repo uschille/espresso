@@ -32,20 +32,20 @@
 
 #ifdef MEM_DEBUG
 #ifdef __GNUC__
-#define realloc(v,s) __realloc((v),(s),__FILE__, __LINE__)
-#define malloc(s) __malloc((s),__FILE__, __LINE__)
+#define prealloc(v,s) __prealloc((v),(s),__FILE__, __LINE__)
+#define pmalloc(s) __pmalloc((s),__FILE__, __LINE__)
 #define free(v) __free((v),__FILE__, __LINE__)
 #else
-#define realloc(v,s) __realloc((v),(s), "no line info", 0)
-#define malloc(s) __malloc((s), "no line info", 0)
+#define prealloc(v,s) __prealloc((v),(s), "no line info", 0)
+#define pmalloc(s) __pmalloc((s), "no line info", 0)
 #define free(v) __free((v),"no line info", 0)
 #endif
 
 /** memory allocation test routine */
-void *__realloc(void *old, unsigned int size, const char *where, int line);
+void *__prealloc(void *old, unsigned int size, const char *where, int line);
 
 /** memory allocation test routine */
-void *__malloc(unsigned int size, const char *where, int line);
+void *__pmalloc(unsigned int size, const char *where, int line);
 
 /** memory allocation test routine */
 void __free(void *p, const char *where, int line);

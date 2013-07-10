@@ -30,7 +30,7 @@
 
 #include <fftw3.h>
 /* our remapping of malloc interferes with fftw3's name mangling. */
-void *fftw_malloc(size_t n);
+void *fftw_pmalloc(size_t n);
 
 #include <mpi.h>
 #include "communication.hpp"
@@ -85,8 +85,8 @@ int fft_init(double **data, int *ca_mesh_dim, int *ca_mesh_margin,
 
   fft.max_comm_size=0; fft.max_mesh_size=0;
   for(i=0;i<4;i++) {
-    n_id[i]  = (int*)malloc(1*n_nodes*sizeof(int));
-    n_pos[i] = (int*)malloc(3*n_nodes*sizeof(int));
+    n_id[i]  = (int*)pmalloc(1*n_nodes*sizeof(int));
+    n_pos[i] = (int*)pmalloc(3*n_nodes*sizeof(int));
   }
 
   /* === node grids === */
@@ -136,10 +136,10 @@ int fft_init(double **data, int *ca_mesh_dim, int *ca_mesh_margin,
       }
     }
 
-    fft.plan[i].send_block = (int *)realloc(fft.plan[i].send_block, 6*fft.plan[i].g_size*sizeof(int));
-    fft.plan[i].send_size  = (int *)realloc(fft.plan[i].send_size, 1*fft.plan[i].g_size*sizeof(int));
-    fft.plan[i].recv_block = (int *)realloc(fft.plan[i].recv_block, 6*fft.plan[i].g_size*sizeof(int));
-    fft.plan[i].recv_size  = (int *)realloc(fft.plan[i].recv_size, 1*fft.plan[i].g_size*sizeof(int));
+    fft.plan[i].send_block = (int *)prealloc(fft.plan[i].send_block, 6*fft.plan[i].g_size*sizeof(int));
+    fft.plan[i].send_size  = (int *)prealloc(fft.plan[i].send_size, 1*fft.plan[i].g_size*sizeof(int));
+    fft.plan[i].recv_block = (int *)prealloc(fft.plan[i].recv_block, 6*fft.plan[i].g_size*sizeof(int));
+    fft.plan[i].recv_size  = (int *)prealloc(fft.plan[i].recv_size, 1*fft.plan[i].g_size*sizeof(int));
 
     fft.plan[i].new_size = fft_calc_local_mesh(my_pos[i], n_grid[i], global_mesh_dim,
 					   global_mesh_off, fft.plan[i].new_mesh, 
@@ -225,12 +225,12 @@ int fft_init(double **data, int *ca_mesh_dim, int *ca_mesh_margin,
   }
   
   /* Factor 2 for complex numbers */
-  fft.send_buf = (double *)realloc(fft.send_buf, fft.max_comm_size*sizeof(double));
-  fft.recv_buf = (double *)realloc(fft.recv_buf, fft.max_comm_size*sizeof(double));
+  fft.send_buf = (double *)prealloc(fft.send_buf, fft.max_comm_size*sizeof(double));
+  fft.recv_buf = (double *)prealloc(fft.recv_buf, fft.max_comm_size*sizeof(double));
   if (*data) fftw_free(*data);
-  (*data)  = (double *)fftw_malloc(fft.max_mesh_size*sizeof(double));
+  (*data)  = (double *)fftw_pmalloc(fft.max_mesh_size*sizeof(double));
   if (fft.data_buf) fftw_free(fft.data_buf);
-  fft.data_buf = (double *)fftw_malloc(fft.max_mesh_size*sizeof(double));
+  fft.data_buf = (double *)fftw_pmalloc(fft.max_mesh_size*sizeof(double));
   if(!(*data) || !fft.data_buf || !fft.recv_buf || !fft.send_buf) {
     fprintf(stderr,"%d: Could not allocate FFT data arays\n",this_node);
     errexit();

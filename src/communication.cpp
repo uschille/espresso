@@ -307,7 +307,7 @@ void mpi_bcast_parameter_slave(int node, int i)
 void mpi_who_has()
 {
   Cell *cell;
-  int *sizes = (int*)malloc(sizeof(int)*n_nodes);
+  int *sizes = (int*)pmalloc(sizeof(int)*n_nodes);
   int *pdata = NULL;
   int pdata_s = 0, i, c;
   int pnode;
@@ -336,7 +336,7 @@ void mpi_who_has()
     else if (sizes[pnode] > 0) {
       if (pdata_s < sizes[pnode]) {
 	pdata_s = sizes[pnode];
-	pdata = (int *)realloc(pdata, sizeof(int)*pdata_s);
+	pdata = (int *)prealloc(pdata, sizeof(int)*pdata_s);
       }
       MPI_Recv(pdata, sizes[pnode], MPI_INT, pnode, SOME_TAG,
 	       comm_cart, MPI_STATUS_IGNORE);
@@ -361,7 +361,7 @@ void mpi_who_has_slave(int node, int param)
   if (n_part == 0)
     return;
 
-  sendbuf = (int*)malloc(sizeof(int)*n_part);
+  sendbuf = (int*)pmalloc(sizeof(int)*n_part);
   npart = 0;
   for (c = 0; c < local_cells.n; c++) {
     cell = local_cells.cell[c];
@@ -1063,7 +1063,7 @@ void mpi_send_bond_slave(int pnode, int part)
   if (pnode == this_node) {
     MPI_Recv(&bond_size, 1, MPI_INT, 0, SOME_TAG, comm_cart, MPI_STATUS_IGNORE);
     if (bond_size) {
-      bond = (int *)malloc(bond_size*sizeof(int));
+      bond = (int *)pmalloc(bond_size*sizeof(int));
       MPI_Recv(bond, bond_size, MPI_INT, 0, SOME_TAG, comm_cart, MPI_STATUS_IGNORE);
     }
     else
@@ -1303,8 +1303,8 @@ void mpi_bcast_ia_params_slave(int i, int j)
     if(bonded_ia_params[i].type == BONDED_IA_TABULATED) {
       int size = bonded_ia_params[i].p.tab.npoints;
       /* alloc force and energy tables on slave nodes! */
-      bonded_ia_params[i].p.tab.f = (double*)malloc(size*sizeof(double));
-      bonded_ia_params[i].p.tab.e = (double*)malloc(size*sizeof(double));
+      bonded_ia_params[i].p.tab.f = (double*)pmalloc(size*sizeof(double));
+      bonded_ia_params[i].p.tab.e = (double*)pmalloc(size*sizeof(double));
       MPI_Bcast(bonded_ia_params[i].p.tab.f, size, MPI_DOUBLE, 0 , comm_cart);
       MPI_Bcast(bonded_ia_params[i].p.tab.e, size, MPI_DOUBLE, 0 , comm_cart);
     }
@@ -1314,9 +1314,9 @@ void mpi_bcast_ia_params_slave(int i, int j)
     if(bonded_ia_params[i].type == BONDED_IA_OVERLAPPED) {
       int size = bonded_ia_params[i].p.overlap.noverlaps;
       /* alloc overlapped parameter arrays on slave nodes! */
-      bonded_ia_params[i].p.overlap.para_a = (double*)malloc(size*sizeof(double));
-      bonded_ia_params[i].p.overlap.para_b = (double*)malloc(size*sizeof(double));
-      bonded_ia_params[i].p.overlap.para_c = (double*)malloc(size*sizeof(double));
+      bonded_ia_params[i].p.overlap.para_a = (double*)pmalloc(size*sizeof(double));
+      bonded_ia_params[i].p.overlap.para_b = (double*)pmalloc(size*sizeof(double));
+      bonded_ia_params[i].p.overlap.para_c = (double*)pmalloc(size*sizeof(double));
       MPI_Bcast(bonded_ia_params[i].p.overlap.para_a, size, MPI_DOUBLE, 0 , comm_cart);
       MPI_Bcast(bonded_ia_params[i].p.overlap.para_b, size, MPI_DOUBLE, 0 , comm_cart);
       MPI_Bcast(bonded_ia_params[i].p.overlap.para_c, size, MPI_DOUBLE, 0 , comm_cart);
@@ -1501,7 +1501,7 @@ void mpi_local_stress_tensor(DoubleList *TensorInBin, int bins[3], int periodic[
 
   mpi_call(mpi_local_stress_tensor_slave,-1,0);
 
-  TensorInBin_ = (DoubleList*)malloc(bins[0]*bins[1]*bins[2]*sizeof(DoubleList));
+  TensorInBin_ = (DoubleList*)pmalloc(bins[0]*bins[1]*bins[2]*sizeof(DoubleList));
   for ( i = 0 ; i < bins[0]*bins[1]*bins[2]; i++ ) {
     init_doublelist(&TensorInBin_[i]);
     alloc_doublelist(&TensorInBin_[i],9);
@@ -1539,7 +1539,7 @@ void mpi_local_stress_tensor_slave(int ana_num, int job) {
   MPI_Bcast(range_start, 3, MPI_DOUBLE, 0, comm_cart);
   MPI_Bcast(range, 3, MPI_DOUBLE, 0, comm_cart);
   
-  TensorInBin = (DoubleList*)malloc(bins[0]*bins[1]*bins[2]*sizeof(DoubleList));
+  TensorInBin = (DoubleList*)pmalloc(bins[0]*bins[1]*bins[2]*sizeof(DoubleList));
   for ( i = 0 ; i < bins[0]*bins[1]*bins[2]; i++ ) {
     init_doublelist(&TensorInBin[i]);
     alloc_doublelist(&TensorInBin[i],9);
@@ -1577,7 +1577,7 @@ void mpi_get_particles(Particle *result, IntList *bi)
   
   mpi_call(mpi_get_particles_slave, -1, bi != NULL);
 
-  sizes = (int*)malloc(sizeof(int)*n_nodes);
+  sizes = (int*)pmalloc(sizeof(int)*n_nodes);
   n_part = cells_get_n_particles();
 
   /* first collect number of particles on each node */
@@ -1701,7 +1701,7 @@ void mpi_get_particles_slave(int pnode, int bi)
 
     /* get (unsorted) particle informations as an array of type 'particle' */
     /* then get the particle information */
-    result = (Particle*)malloc(n_part*sizeof(Particle));
+    result = (Particle*)pmalloc(n_part*sizeof(Particle));
 
     init_intlist(&local_bi);
     
@@ -1968,12 +1968,12 @@ void mpi_bcast_constraint(int del_num)
   else if (del_num == -2) {
     /* delete all constraints */
     n_constraints = 0;
-    constraints = (Constraint*)realloc(constraints,n_constraints*sizeof(Constraint));
+    constraints = (Constraint*)prealloc(constraints,n_constraints*sizeof(Constraint));
   }
   else {
     memcpy(&constraints[del_num],&constraints[n_constraints-1],sizeof(Constraint));
     n_constraints--;
-    constraints = (Constraint*)realloc(constraints,n_constraints*sizeof(Constraint));
+    constraints = (Constraint*)prealloc(constraints,n_constraints*sizeof(Constraint));
   }
 
   on_constraint_change();
@@ -1985,18 +1985,18 @@ void mpi_bcast_constraint_slave(int node, int parm)
 #ifdef CONSTRAINTS
   if(parm == -1) {
     n_constraints++;
-    constraints = (Constraint*)realloc(constraints,n_constraints*sizeof(Constraint));
+    constraints = (Constraint*)prealloc(constraints,n_constraints*sizeof(Constraint));
     MPI_Bcast(&constraints[n_constraints-1], sizeof(Constraint), MPI_BYTE, 0, comm_cart);
   }
   else if (parm == -2) {
     /* delete all constraints */
     n_constraints = 0;
-    constraints = (Constraint*)realloc(constraints,n_constraints*sizeof(Constraint));
+    constraints = (Constraint*)prealloc(constraints,n_constraints*sizeof(Constraint));
   }
   else {
     memcpy(&constraints[parm],&constraints[n_constraints-1],sizeof(Constraint));
     n_constraints--;
-    constraints = (Constraint*)realloc(constraints,n_constraints*sizeof(Constraint));    
+    constraints = (Constraint*)prealloc(constraints,n_constraints*sizeof(Constraint));    
   }
 
   on_constraint_change();
@@ -2016,7 +2016,7 @@ void mpi_bcast_lbboundary(int del_num)
   else if (del_num == -2) {
     /* delete all boundaries */
     n_lb_boundaries = 0;
-    lb_boundaries = (LB_Boundary*) realloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
+    lb_boundaries = (LB_Boundary*) prealloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
   }
 #if defined(LB_BOUNDARIES_GPU)
   else if (del_num == -3) {
@@ -2026,7 +2026,7 @@ void mpi_bcast_lbboundary(int del_num)
   else {
     memcpy(&lb_boundaries[del_num],&lb_boundaries[n_lb_boundaries-1],sizeof(LB_Boundary));
     n_lb_boundaries--;
-    lb_boundaries = (LB_Boundary*) realloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
+    lb_boundaries = (LB_Boundary*) prealloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
   }
 
   on_lbboundary_change();
@@ -2040,13 +2040,13 @@ void mpi_bcast_lbboundary_slave(int node, int parm)
 #if defined(LB_BOUNDARIES)
   if(parm == -1) {
     n_lb_boundaries++;
-    lb_boundaries = (LB_Boundary*) realloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
+    lb_boundaries = (LB_Boundary*) prealloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
     MPI_Bcast(&lb_boundaries[n_lb_boundaries-1], sizeof(LB_Boundary), MPI_BYTE, 0, comm_cart);
   }
   else if (parm == -2) {
     /* delete all boundaries */
     n_lb_boundaries = 0;
-    lb_boundaries = (LB_Boundary*) realloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
+    lb_boundaries = (LB_Boundary*) prealloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));
   }
 #if defined(LB_BOUNDARIES_GPU)
   else if (parm == -3) {
@@ -2056,7 +2056,7 @@ void mpi_bcast_lbboundary_slave(int node, int parm)
   else {
     memcpy(&lb_boundaries[parm],&lb_boundaries[n_lb_boundaries-1],sizeof(LB_Boundary));
     n_lb_boundaries--;
-    lb_boundaries = (LB_Boundary*) realloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));    
+    lb_boundaries = (LB_Boundary*) prealloc(lb_boundaries,n_lb_boundaries*sizeof(LB_Boundary));    
   }
 #endif
 
@@ -2445,12 +2445,12 @@ int mpi_gather_runtime_errors(char **errors)
     return ES_OK;
 
   // gather the maximum length of the error messages
-  int *errcnt = (int*)malloc(n_nodes*sizeof(int));
+  int *errcnt = (int*)pmalloc(n_nodes*sizeof(int));
   MPI_Gather(&n_error_msg, 1, MPI_INT, errcnt, 1, MPI_INT, 0, comm_cart);
 
   for (int node = 0; node < n_nodes; node++) {
     if (errcnt[node] > 0) {
-      errors[node] = (char *)malloc(errcnt[node]);
+      errors[node] = (char *)pmalloc(errcnt[node]);
 
       if (node == 0)
 	strcpy(errors[node], error_msg);
@@ -2462,7 +2462,7 @@ int mpi_gather_runtime_errors(char **errors)
   }
 
   /* reset error message on master node */
-  error_msg = (char*)realloc(error_msg, n_error_msg = 0);
+  error_msg = (char*)prealloc(error_msg, n_error_msg = 0);
 
   free(errcnt);
 
@@ -2478,7 +2478,7 @@ void mpi_gather_runtime_errors_slave(int node, int parm)
   if (n_error_msg > 0) {
     MPI_Send(error_msg, n_error_msg, MPI_CHAR, 0, 0, comm_cart);
     /* reset error message on slave node */
-    error_msg = (char*)realloc(error_msg, n_error_msg = 0);
+    error_msg = (char*)prealloc(error_msg, n_error_msg = 0);
   }
 }
 

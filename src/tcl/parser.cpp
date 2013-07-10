@@ -50,7 +50,7 @@ int parse_double_list(Tcl_Interp *interp, char *list, DoubleList *dl)
 
 int gather_runtime_errors(Tcl_Interp *interp, int error_code)
 {
-  char **errors =(char **)malloc(n_nodes*sizeof(char *));
+  char **errors =(char **)pmalloc(n_nodes*sizeof(char *));
 
   if (mpi_gather_runtime_errors(errors) == ES_OK) {
     free(errors);

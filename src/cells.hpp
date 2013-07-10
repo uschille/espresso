@@ -214,7 +214,7 @@ inline void realloc_cellplist(CellPList *cpl, int size)
 {
   if(size != cpl->max) {
     cpl->max = size;
-    cpl->cell = (Cell **) realloc(cpl->cell, sizeof(Cell *)*cpl->max);
+    cpl->cell = (Cell **) prealloc(cpl->cell, sizeof(Cell *)*cpl->max);
   }
 }
 

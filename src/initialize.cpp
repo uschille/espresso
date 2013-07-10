@@ -82,7 +82,7 @@ void on_program_start()
 {
   EVENT_TRACE(fprintf(stderr, "%d: on_program_start\n", this_node));
 
-  /* tell Electric fence that we do realloc(0) on purpose. */
+  /* tell Electric fence that we do prealloc(0) on purpose. */
 #ifdef EFENCE
   extern int EF_ALLOW_MALLOC_0;
   EF_ALLOW_MALLOC_0 = 1;

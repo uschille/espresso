@@ -58,7 +58,7 @@ int mindist3(int part_id, double r_catch, int *ids) {
   double dx,dy,dz;
   int i, me, caught=0;
 
-  partCfgMD = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  partCfgMD = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   mpi_get_particles(partCfgMD, NULL);
   me = -1; /* Since 'mpi_get_particles' returns the particles unsorted, it's most likely that 'partCfgMD[i].p.identity != i'
 	      --> prevent that! */
@@ -88,7 +88,7 @@ double mindist4(double pos[3]) {
   int i;
 
   if (n_total_particles ==0) return (dmin(dmin(box_l[0],box_l[1]),box_l[2]));
-  partCfgMD = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  partCfgMD = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   mpi_get_particles(partCfgMD, NULL); 
   for (i=0; i<n_total_particles; i++) {
     dx = pos[0] - partCfgMD[i].r.p[0];   dx -= dround(dx/box_l[0])*box_l[0];
@@ -188,10 +188,10 @@ int polymerC(int N_P, int MPC, double bond_length, int part_id, double *posed,
   double a[3] = {0, 0, 0};
   double b[3],c[3]={0., 0., 0.},d[3];
   double absc;
-  poly = (double*)malloc(3*MPC*sizeof(double));
+  poly = (double*)pmalloc(3*MPC*sizeof(double));
 
   bond_size = bonded_ia_params[type_bond].num;
-  bond = (int*)malloc(sizeof(int) * (bond_size + 1));
+  bond = (int*)pmalloc(sizeof(int) * (bond_size + 1));
   bond[0] = type_bond;
 
   cnt1 = cnt2 = max_cnt = 0;
@@ -546,12 +546,12 @@ int collectBonds(int mode, int part_id, int N_P, int MPC, int type_bond, int **b
   /* Get particle and bonding informations. */
   IntList *bl;
   Particle *prt, *sorted;
-  bl  = (IntList*)malloc(1*sizeof(IntList));
-  prt = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  bl  = (IntList*)pmalloc(1*sizeof(IntList));
+  prt = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   mpi_get_particles(prt, bl); 
 
   /* Sort the received informations. */
-  sorted = (Particle*)malloc(n_total_particles*sizeof(Particle));
+  sorted = (Particle*)pmalloc(n_total_particles*sizeof(Particle));
   for(i = 0; i < n_total_particles; i++)
     memcpy(&sorted[prt[i].p.identity], &prt[i], sizeof(Particle));
   free(prt);
@@ -559,11 +559,11 @@ int collectBonds(int mode, int part_id, int N_P, int MPC, int type_bond, int **b
   
   if (mode == 1) {
     /* Find all the bonds leading to and from the ending monomers of the chains. */
-    bond  = (int*)malloc(2*N_P*sizeof(int));      
-    bonds   = (int**)malloc(2*N_P*sizeof(int *));
+    bond  = (int*)pmalloc(2*N_P*sizeof(int));      
+    bonds   = (int**)pmalloc(2*N_P*sizeof(int *));
     for (i=0; i < 2*N_P; i++) { 
       bond[i]=0;  
-      bonds[i]= (int*)malloc(1*sizeof(int)); 
+      bonds[i]= (int*)pmalloc(1*sizeof(int)); 
     }
     for (k=part_id; k < N_P*MPC + part_id; k++) {
       i=0;
@@ -573,12 +573,12 @@ int collectBonds(int mode, int part_id, int N_P, int MPC, int type_bond, int **b
 	  for(j=0; j<size; j++) {
 	    if ((prt[k].p.identity % MPC == 0) || ( (prt[k].p.identity+1) % MPC == 0)) {
 	      ii = prt[k].p.identity%MPC ? 2*(prt[k].p.identity+1)/MPC-1 : 2*prt[k].p.identity/MPC;
-	      bonds[i] = (int*)realloc(bonds[i], (bond[i]+1)*sizeof(int));
+	      bonds[i] = (int*)prealloc(bonds[i], (bond[i]+1)*sizeof(int));
 	      bonds[ii][bond[ii]++] = prt[k].bl.e[i];
 	    }
 	    else if ((prt[k].bl.e[i] % MPC == 0) || ( (prt[k].bl.e[i]+1) % MPC == 0)) {
 	      ii = prt[k].bl.e[i]%MPC ? 2*(prt[k].bl.e[i]+1)/MPC-1 : 2*prt[k].bl.e[i]/MPC;
-	      bonds[i] = (int*)realloc(bonds[i], (bond[i]+1)*sizeof(int));
+	      bonds[i] = (int*)prealloc(bonds[i], (bond[i]+1)*sizeof(int));
 	      bonds[ii][bond[ii]++] = prt[k].p.identity;
 	    }
 	    i++;
@@ -593,11 +593,11 @@ int collectBonds(int mode, int part_id, int N_P, int MPC, int type_bond, int **b
   }
   else if (mode == 2) {
     /* Find all the bonds leading to and from each monomer. */
-    bond  = (int*)malloc(N_P*MPC*sizeof(int));                
-    bonds   = (int**)malloc(N_P*MPC*sizeof(int *));
+    bond  = (int*)pmalloc(N_P*MPC*sizeof(int));                
+    bonds   = (int**)pmalloc(N_P*MPC*sizeof(int *));
     for (i=0; i < N_P*MPC + part_id; i++) { 
       bond[i]=0;  
-      bonds[i]= (int*)malloc(1*sizeof(int)); 
+      bonds[i]= (int*)pmalloc(1*sizeof(int)); 
     }
     for (k=part_id; k < N_P*MPC + part_id; k++) {
       i=0;
@@ -606,9 +606,9 @@ int collectBonds(int mode, int part_id, int N_P, int MPC, int type_bond, int **b
 	if (prt[k].bl.e[i++] == type_bond) {
 	  for(j=0; j<size; j++) {
 	    ii = prt[k].bl.e[i];
-	    bonds[k] = (int*) realloc(bonds[k], (bond[k]+1)*sizeof(int));
+	    bonds[k] = (int*) prealloc(bonds[k], (bond[k]+1)*sizeof(int));
 	    bonds[k][bond[k]++] = ii;
-	    bonds[ii] = (int*) realloc(bonds[ii], (bond[ii]+1)*sizeof(int));
+	    bonds[ii] = (int*) prealloc(bonds[ii], (bond[ii]+1)*sizeof(int));
 	    bonds[ii][bond[ii]++] = k;
 	    i++;
 	  }
@@ -643,16 +643,16 @@ int crosslinkC(int N_P, int MPC, int part_id, double r_catch, int link_dist, int
     });
   
   /* Find all possible binding partners in the neighbourhood of the unconnected ending monomers. */
-  link  = (int*)malloc(2*N_P*sizeof(int));       
-  links = (int**)malloc(2*N_P*sizeof(int *));
+  link  = (int*)pmalloc(2*N_P*sizeof(int));       
+  links = (int**)pmalloc(2*N_P*sizeof(int *));
   for (i=0; i < N_P; i++) {
     for (k=0; k<2; k++) {
       if (bond[i*MPC+k*(MPC-1)] == 1) {
-	links[2*i+k] = (int*)malloc(n_total_particles*sizeof(int));
+	links[2*i+k] = (int*)pmalloc(n_total_particles*sizeof(int));
 	link[2*i+k] = mindist3(i*MPC+k*(MPC-1)+part_id, r_catch, links[2*i+k]);
-	links[2*i+k] = (int*)realloc(links[2*i+k],link[2*i+k]*sizeof(int));
+	links[2*i+k] = (int*)prealloc(links[2*i+k],link[2*i+k]*sizeof(int));
       }
-      else if (bond[i*MPC+k*(MPC-1)] == 2) link[2*i+k] = -1;  /* Note that links[2*i+k] will not be malloc()ed now (taken care of at end)!!! */
+      else if (bond[i*MPC+k*(MPC-1)] == 2) link[2*i+k] = -1;  /* Note that links[2*i+k] will not be pmalloc()ed now (taken care of at end)!!! */
       else { fprintf(stderr,"Runaway end-monomer %d detected (has %d bonds)!\nAborting...\n", i*N_P+k*(MPC-1)+part_id, bond[i*MPC+k*(MPC-1)]); 
              fflush(NULL); return(-2); }
       POLY_TRACE(printf("%d: ",i*MPC+k*(MPC-1)+part_id); 
@@ -670,14 +670,14 @@ int crosslinkC(int N_P, int MPC, int part_id, double r_catch, int link_dist, int
 	    if ((links[2*i+k][j] % MPC != 0) && ((links[2*i+k][j]+1) % MPC != 0)) links[2*i+k][size++] = links[2*i+k][j];    /* no ends accepted */
 	}
 	link[2*i+k]  = size; 
-	links[2*i+k] = (int*)realloc(links[2*i+k],link[2*i+k]*sizeof(int));
+	links[2*i+k] = (int*)prealloc(links[2*i+k],link[2*i+k]*sizeof(int));
       }
       POLY_TRACE(printf("%d: ",ii); for (j=0; j<link[2*i+k]; j++) printf("%d ",links[2*i+k][j]); printf("\t=%d\n",link[2*i+k]); fflush(NULL) );
     }
   }
 
   /* Randomly choose a partner (if not available -> '-1') for each polymer chain's end if it's not already been crosslinked (-> '-2'). */
-  cross = (int*)malloc(2*N_P*sizeof(int)); crossL = 0;
+  cross = (int*)pmalloc(2*N_P*sizeof(int)); crossL = 0;
   for (i=0; i < 2*N_P; i++) 
     if (link[i] > 0) { cross[i] = links[i][(int)dround(d_random()*(link[i]-1))]; crossL++; }  else { cross[i] = -1+link[i]; crossL -= link[i]; }
   POLY_TRACE(for (i=0; i < 2*N_P; i++) printf("%d -> %d \t", i%2 ? (i+1)*MPC/2-1 : i*MPC/2, cross[i]); printf("=> %d\n",crossL); fflush(NULL) );
@@ -733,8 +733,8 @@ int crosslinkC(int N_P, int MPC, int part_id, double r_catch, int link_dist, int
 	bondN[0] = type_bond; bondN[1] = cross[2*i+1]; size++;
 	if (change_particle_bond(i*MPC+(MPC-1) + part_id, bondN, 0)==ES_ERROR) return (-3);
       }
-      free(bonds[2*i]);    if (link[2*i]   >= 0) free(links[2*i]);    /* else crash(); because links[2*i]   has never been malloc()ed then */
-      free(bonds[2*i+1]);  if (link[2*i+1] >= 0) free(links[2*i+1]);  /* else crash(); because links[2*i+1] has never been malloc()ed then */
+      free(bonds[2*i]);    if (link[2*i]   >= 0) free(links[2*i]);    /* else crash(); because links[2*i]   has never been pmalloc()ed then */
+      free(bonds[2*i+1]);  if (link[2*i+1] >= 0) free(links[2*i+1]);  /* else crash(); because links[2*i+1] has never been pmalloc()ed then */
     }
     free(bond); free(bonds); free(link); free(links); free(cross);
     POLY_TRACE(printf("Created %d new bonds; now %d ends are crosslinked!\n", size, crossL));

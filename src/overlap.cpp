@@ -54,7 +54,7 @@ int overlapped_bonded_set_params(int bond_type, int overlap_type,
 
   /* copy filename */
   size = strlen(filename);
-  bonded_ia_params[bond_type].p.overlap.filename = (char*)malloc((size+1)*sizeof(char));
+  bonded_ia_params[bond_type].p.overlap.filename = (char*)pmalloc((size+1)*sizeof(char));
   strcpy(bonded_ia_params[bond_type].p.overlap.filename,filename);
 
   fp = fopen( filename , "r");
@@ -71,9 +71,9 @@ int overlapped_bonded_set_params(int bond_type, int overlap_type,
   bonded_ia_params[bond_type].p.overlap.noverlaps = size;
 
   /* allocate overlapped funciton parameter arrays */
-  bonded_ia_params[bond_type].p.overlap.para_a = (double*)malloc(size*sizeof(double));
-  bonded_ia_params[bond_type].p.overlap.para_b = (double*)malloc(size*sizeof(double));
-  bonded_ia_params[bond_type].p.overlap.para_c = (double*)malloc(size*sizeof(double));
+  bonded_ia_params[bond_type].p.overlap.para_a = (double*)pmalloc(size*sizeof(double));
+  bonded_ia_params[bond_type].p.overlap.para_b = (double*)pmalloc(size*sizeof(double));
+  bonded_ia_params[bond_type].p.overlap.para_c = (double*)pmalloc(size*sizeof(double));
 
    /* Read in the overlapped funciton parameter data */
   for (i=0; i<size; i++) {

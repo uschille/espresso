@@ -603,8 +603,8 @@ int distribute_tensors(DoubleList *TensorInBin, double *force, int bins[3], doub
   
     PTENSOR_TRACE(fprintf(stderr,"%d: distribute_tensors: x goes from %d to %d\n",this_node,startx, endx);)
     /* Initialise starty array */
-    starty = (int *)malloc(sizeof(int)*(occupiedxbins+1));
-    occupiedybins = (int *)malloc(sizeof(int)*occupiedxbins);
+    starty = (int *)pmalloc(sizeof(int)*(occupiedxbins+1));
+    occupiedybins = (int *)pmalloc(sizeof(int)*occupiedxbins);
 
     /* find in which y-bins the line starts and stops for each x-bin */
     /* in xbin the line starts in y-bin number starty[xbin-startx] and ends in starty[xbin-startx+1] */
@@ -631,8 +631,8 @@ int distribute_tensors(DoubleList *TensorInBin, double *force, int bins[3], doub
     }
 
     /* Initialise startz array */
-    occupiedzbins = (int *)malloc(sizeof(int)*totoccupiedybins);
-    startz = (int *)malloc(sizeof(int)*(totoccupiedybins+1));
+    occupiedzbins = (int *)pmalloc(sizeof(int)*totoccupiedybins);
+    startz = (int *)pmalloc(sizeof(int)*(totoccupiedybins+1));
     /* find in which z-bins the line starts and stops for each y-bin*/
     counter = 0;
     if (facein == 2) {

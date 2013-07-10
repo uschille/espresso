@@ -36,8 +36,8 @@ int parse_id_list(Tcl_Interp* interp, int argc, char** argv, int* change, IntLis
   int i,ret;
 //  char** temp_argv; int temp_argc;
 //  int temp;
-  IntList* input=(IntList*)malloc(sizeof(IntList));
-  IntList* output=(IntList*)malloc(sizeof(IntList));
+  IntList* input=(IntList*)pmalloc(sizeof(IntList));
+  IntList* output=(IntList*)pmalloc(sizeof(IntList));
   init_intlist(input);
   alloc_intlist(input,1);
   init_intlist(output);
@@ -239,8 +239,8 @@ int tclcommand_observable_tclcommand(Tcl_Interp* interp, int argc, char** argv, 
       Tcl_AppendResult(interp, "Error in observable tclcommand: n_vec is not int\n", (char *)NULL );
       return TCL_ERROR;
   }
-  container = (Observable_Tclcommand_Arg_Container*) malloc(sizeof(Observable_Tclcommand_Arg_Container));
-  container->command = (char*)malloc(strlen(argv[2])*sizeof(char*));
+  container = (Observable_Tclcommand_Arg_Container*) pmalloc(sizeof(Observable_Tclcommand_Arg_Container));
+  container->command = (char*)pmalloc(strlen(argv[2])*sizeof(char*));
   strcpy(container->command, argv[2]);
   container->n_A = n_A;
   container->interp = interp;
@@ -571,7 +571,7 @@ int tclcommand_observable_dipole_moment(Tcl_Interp* interp, int argc, char** arg
 ////  return TCL_ERROR;
 //  if (argc > 1 && ARG1_IS_I(order)) {
 //    obs->fun = &observable_structure_factor;
-//    order_p=malloc(sizeof(int));
+//    order_p=pmalloc(sizeof(int));
 //    *order_p=order;
 //    obs->args=(void*) order_p;
 //    int order2,i,j,k,l,n ; 
@@ -604,7 +604,7 @@ int tclcommand_observable_dipole_moment(Tcl_Interp* interp, int argc, char** arg
 //  char dbuffer[TCL_DOUBLE_SPACE];
 ////  int *vals;
 //  double *q_density;
-//  params=(observable_sf_params*)malloc(sizeof(observable_sf_params));
+//  params=(observable_sf_params*)pmalloc(sizeof(observable_sf_params));
 //  
 //  if(argc!=5) { 
 //    sprintf(ibuffer, "%d ", argc);
@@ -671,8 +671,8 @@ int tclcommand_observable_dipole_moment(Tcl_Interp* interp, int argc, char** arg
 //	  }
 //        }
 //  params->dim_sf=l;
-//  params->q_vals=(int*)malloc(3*l*sizeof(double));
-//  q_density=(double*)malloc(order2*sizeof(double));
+//  params->q_vals=(int*)pmalloc(3*l*sizeof(double));
+//  q_density=(double*)pmalloc(order2*sizeof(double));
 //  for(i=0;i<order2;i++) q_density[i]=0.0;
 //  l=0;
 //  // Store their values and density
@@ -701,16 +701,16 @@ int tclcommand_observable_interacts_with(Tcl_Interp* interp, int argc, char** ar
   int temp;
   double cutoff;
   obs->fun = &observable_interacts_with;
-  ids1=(IntList*)malloc(sizeof(IntList));
-  ids2=(IntList*)malloc(sizeof(IntList));
-  iw_params* iw_params_p=(iw_params*) malloc(sizeof(iw_params));
+  ids1=(IntList*)pmalloc(sizeof(IntList));
+  ids2=(IntList*)pmalloc(sizeof(IntList));
+  iw_params* iw_params_p=(iw_params*) pmalloc(sizeof(iw_params));
   if (! parse_id_list(interp, argc-1, argv+1, &temp, &ids1) == TCL_OK ) {
     free(ids1);
     free(ids2);
     free(iw_params_p);
     return TCL_ERROR;
   }
-  iw_params_p=(iw_params*)malloc(sizeof(iw_params));
+  iw_params_p=(iw_params*)pmalloc(sizeof(iw_params));
   iw_params_p->ids1=ids1;
   *change=1+temp;
   if (! parse_id_list(interp, argc-3, argv+3, &temp, &ids2) == TCL_OK ) {
@@ -741,7 +741,7 @@ int tclcommand_observable_interacts_with(Tcl_Interp* interp, int argc, char** ar
 //  if (ARG0_IS_S("textfile")) {
 //    // We still can only handle full files
 //    if ( argc>1 ) {
-//      fds= malloc(sizeof(file_data_source));
+//      fds= pmalloc(sizeof(file_data_source));
 //      error = file_data_source_init(fds, argv[1], 0);
 //      *change=2;
 //      if (!error) {
@@ -764,7 +764,7 @@ int tclcommand_observable_interacts_with(Tcl_Interp* interp, int argc, char** ar
 //    if (argc>1 && ARG1_IS_I(temp)) {
 //      *dim_A = temp;
 //      *A_fun = &tcl_input;
-//      *A_args=malloc(sizeof(tcl_input_data));
+//      *A_args=pmalloc(sizeof(tcl_input_data));
 //      *change =2;
 //      return TCL_OK;
 //    } else {
@@ -779,7 +779,7 @@ int tclcommand_observable_interacts_with(Tcl_Interp* interp, int argc, char** ar
 
 #define REGISTER_OBSERVABLE(name,parser,id) \
   if (ARG_IS_S(2,#name)) { \
-    observables[id]=(observable*)malloc(sizeof(observable));            \
+    observables[id]=(observable*)pmalloc(sizeof(observable));            \
     if (parser(interp, argc-2, argv+2, &temp, observables[n_observables]) ==TCL_OK) { \
       n_observables++; \
       argc-=1+temp; \
@@ -824,7 +824,7 @@ int tclcommand_observable(ClientData data, Tcl_Interp *interp, int argc, char **
     for (id=0;id<n_observables;id++) 
       if ( observables+id == 0 ) break; 
     if (id==n_observables) 
-      observables=(observable**) realloc(observables, (n_observables+1)*sizeof(observable*)); 
+      observables=(observable**) prealloc(observables, (n_observables+1)*sizeof(observable*)); 
 
     REGISTER_OBSERVABLE(particle_velocities, tclcommand_observable_particle_velocities,id);
     REGISTER_OBSERVABLE(particle_angular_momentum, tclcommand_observable_particle_angular_momentum,id);
@@ -979,7 +979,7 @@ int file_data_source_readline(void* xargs, double* A, int dim_A) {
 int tclcommand_parse_profile(Tcl_Interp* interp, int argc, char** argv, int* change, int* dim_A, profile_data** pdata_) {
   int temp;
   *change=0;
-  profile_data* pdata=(profile_data*)malloc(sizeof(profile_data));
+  profile_data* pdata=(profile_data*)pmalloc(sizeof(profile_data));
   *pdata_ = pdata;
   pdata->id_list=0;
   pdata->minx=0;
@@ -1103,7 +1103,7 @@ int tclcommand_parse_profile(Tcl_Interp* interp, int argc, char** argv, int* cha
 int tclcommand_parse_radial_profile(Tcl_Interp* interp, int argc, char** argv, int* change, int* dim_A, radial_profile_data** pdata_) {
   int temp;
   *change=0;
-  radial_profile_data* pdata=(radial_profile_data*)malloc(sizeof(radial_profile_data));
+  radial_profile_data* pdata=(radial_profile_data*)pmalloc(sizeof(radial_profile_data));
   *pdata_ = pdata;
   pdata->id_list=0;
   if (box_l[0]<box_l[1]) 
@@ -1264,7 +1264,7 @@ int tclcommand_parse_radial_profile(Tcl_Interp* interp, int argc, char** argv, i
 
 int tclcommand_observable_print(Tcl_Interp* interp, int argc, char** argv, int* change, observable* obs) {
   char buffer[TCL_DOUBLE_SPACE];
-  double* values=(double*)malloc(obs->n*sizeof(double));
+  double* values=(double*)pmalloc(obs->n*sizeof(double));
   if ( (*obs->fun)(obs->args, values, obs->n) ) {
     Tcl_AppendResult(interp, "\nFailed to compute observable tclcommand\n", (char *)NULL );
     return TCL_ERROR;

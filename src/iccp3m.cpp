@@ -605,7 +605,7 @@ inline void add_pair_iccp3m(PairList *pl, Particle *p1, Particle *p2)
   /* check size of verlet List */
   if(pl->n+1 >= pl->max) {
     pl->max += LIST_INCREMENT;
-    pl->pair = (Particle **)realloc(pl->pair, 2*pl->max*sizeof(Particle *));
+    pl->pair = (Particle **)prealloc(pl->pair, 2*pl->max*sizeof(Particle *));
   }
   /* add pair */
   pl->pair[(2*pl->n)  ] = p1;
@@ -621,7 +621,7 @@ void resize_verlet_list_iccp3m(PairList *pl)
   if( diff > 2*LIST_INCREMENT ) {
     diff = (diff/LIST_INCREMENT)-1;
     pl->max -= diff*LIST_INCREMENT;
-    pl->pair = (Particle **)realloc(pl->pair, 2*pl->max*sizeof(Particle *));
+    pl->pair = (Particle **)prealloc(pl->pair, 2*pl->max*sizeof(Particle *));
   }
 }
 

@@ -60,6 +60,8 @@
 #include "statistics_correlation.hpp"
 #include "ghmc.hpp"
 
+#include "AffineForce.hpp"
+
 /************************************************
  * DEFINES
  ************************************************/
