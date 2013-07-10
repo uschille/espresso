@@ -22,6 +22,21 @@ void ForceIterator::addForces() {
   Particle *p;
   int i,c,np;
 
+  F.reserve(System.npart());
+
+  for(unsigned int i = 0; i < System.npart(); i++)
+    F[i] = SystemInterface::Vector3(0,0,0);
+
+
+
+  for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it) {
+    int id = 0;
+    for(SystemInterface::const_vec_iterator &jt = (*it)->fBegin(); jt != (*it)->fEnd(); ++jt) {
+      F[id++] += (*jt);
+    }
+  }
+  
+
   for (c = 0; c < local_cells.n; c++) {
     cell = local_cells.cell[c];
     p  = cell->part;
