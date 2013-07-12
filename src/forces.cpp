@@ -53,6 +53,9 @@
 #include "iccp3m.hpp"
 #include "p3m_gpu.hpp"
 
+#include "AffineForce.hpp"
+#include "ForceIterator.hpp"
+
 /************************************************************/
 /* local prototypes                                         */
 /************************************************************/
@@ -68,6 +71,14 @@ void init_forces();
 
 void force_calc()
 {
+ForceIterator FI;
+
+AffineForce A;
+FI.addMethod(&A);
+
+FI.init();
+FI.run();
+
 
 #if defined(LB_GPU) || (defined(ELECTROSTATICS) && defined(CUDA))
 
@@ -155,6 +166,7 @@ void force_calc()
   calc_comfixed();
 #endif
 
+FI.addForces();
 }
 
 /************************************************************/
