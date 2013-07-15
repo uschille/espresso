@@ -53,8 +53,7 @@
 #include "iccp3m.hpp"
 #include "p3m_gpu.hpp"
 
-#include "AffineForce.hpp"
-#include "ForceIterator.hpp"
+//#include "AffineForce.hpp"
 
 /************************************************************/
 /* local prototypes                                         */
@@ -69,9 +68,10 @@ void init_forces();
 
 /************************************************************/
 
+ForceIterator FI;
+
 void force_calc()
 {
-ForceIterator FI;
 
 //AffineForce A;
 //FI.addMethod(&A);

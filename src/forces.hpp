@@ -82,6 +82,8 @@
 #include "elc.hpp"
 #include "iccp3m.hpp"
 #include "collision.hpp" 
+
+#include "ForceIterator.hpp"
 /* end of force files */
 
 /** \name Exported Functions */
@@ -112,6 +114,7 @@
  *  </ol>
  */
 void force_calc();
+extern ForceIterator FI;
 
 /** Set forces of all ghosts to zero
 */
