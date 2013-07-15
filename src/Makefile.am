@@ -258,6 +258,7 @@ libEspresso_a_SOURCES += \
 	tcl/magnetic_non_p3m_methods_tcl.cpp tcl/magnetic_non_p3m_methods_tcl.hpp \
 	tcl/maggs_tcl.cpp tcl/maggs_tcl.hpp \
 	tcl/mmm1d_tcl.cpp tcl/mmm1d_tcl.hpp \
+	tcl/mmm1dgpu_tcl.cpp tcl/mmm1dgpu_tcl.hpp \
 	tcl/mmm2d_tcl.cpp tcl/mmm2d_tcl.hpp \
 	tcl/p3m-dipolar_tcl.cpp tcl/p3m-dipolar_tcl.hpp \
 	tcl/p3m_tcl.cpp tcl/p3m_tcl.hpp \
@@ -397,9 +398,11 @@ SUFFIXES=.cu
 
 CUDA_SOURCES = \
 	cuda_init.cu cuda_init.hpp \
+
 	cuda_common.cu cuda_common.hpp \
 	lbgpu.cu lbgpu.hpp \
-	p3m_gpu.cu p3m_gpu.hpp
+	p3m_gpu.cu p3m_gpu.hpp \
+	Mmm1dgpuForce.cu Mmm1dgpuForce.hpp
 
 cuda_common.o: cuda_common.hpp myconfig-final.hpp
 cuda_init.o: cuda_init.hpp myconfig-final.hpp
