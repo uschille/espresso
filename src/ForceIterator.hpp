@@ -11,6 +11,7 @@ public:
   void init();
   void run();
   void addForces();
+  bool isReady();
 protected:
   EspressoSystemInterface System;
   std::vector<OneParticleForce *> methods;

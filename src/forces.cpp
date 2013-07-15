@@ -73,8 +73,8 @@ void force_calc()
 {
 ForceIterator FI;
 
-AffineForce A;
-FI.addMethod(&A);
+//AffineForce A;
+//FI.addMethod(&A);
 
 FI.init();
 FI.run();
@@ -165,6 +165,9 @@ FI.run();
 #ifdef COMFIXED
   calc_comfixed();
 #endif
+
+while(!FI.isReady())
+  ; // synchronize asynchronous forces
 
 FI.addForces();
 }

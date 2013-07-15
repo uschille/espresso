@@ -19,6 +19,13 @@ void ForceIterator::run() {
     (*it)->run(System);
 }
 
+bool ForceIterator::isReady() {
+  for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
+    if (!(*it)->isReady())
+      return false;
+  return true;
+}
+
 void ForceIterator::addForces() {
   Cell *cell;
   Particle *p;
