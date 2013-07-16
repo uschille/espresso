@@ -29,8 +29,6 @@
 #ifdef P3M
 
 #include <fftw3.h>
-/* our remapping of malloc interferes with fftw3's name mangling. */
-void *fftw_pmalloc(size_t n);
 
 #include <mpi.h>
 #include "communication.hpp"
@@ -228,9 +226,9 @@ int fft_init(double **data, int *ca_mesh_dim, int *ca_mesh_margin,
   fft.send_buf = (double *)prealloc(fft.send_buf, fft.max_comm_size*sizeof(double));
   fft.recv_buf = (double *)prealloc(fft.recv_buf, fft.max_comm_size*sizeof(double));
   if (*data) fftw_free(*data);
-  (*data)  = (double *)fftw_pmalloc(fft.max_mesh_size*sizeof(double));
+  (*data)  = (double *)fftw_malloc(fft.max_mesh_size*sizeof(double));
   if (fft.data_buf) fftw_free(fft.data_buf);
-  fft.data_buf = (double *)fftw_pmalloc(fft.max_mesh_size*sizeof(double));
+  fft.data_buf = (double *)fftw_malloc(fft.max_mesh_size*sizeof(double));
   if(!(*data) || !fft.data_buf || !fft.recv_buf || !fft.send_buf) {
     fprintf(stderr,"%d: Could not allocate FFT data arays\n",this_node);
     errexit();

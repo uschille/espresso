@@ -30,8 +30,6 @@
 #ifdef DP3M
 
 #include <fftw3.h>
-/* our remapping of malloc interferes with fftw3's name mangling. */
-void *fftw_pmalloc(size_t n);
 
 #include <mpi.h>
 #include "communication.hpp"
