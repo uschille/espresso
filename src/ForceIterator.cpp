@@ -31,6 +31,9 @@ void ForceIterator::addForces() {
   Particle *p;
   int i,c,np;
 
+  if (methods.size() == 0)
+    return;
+
   puts("Adding forces.");
 
   F.reserve(System.npart());
