@@ -27,8 +27,9 @@
 #include <cuda.h>
 #include <stdlib.h>
 
-#include "lbgpu.hpp"
 #include "config.hpp"
+#include "lbgpu.hpp"
+
 
 #ifdef LB_GPU
 #ifndef GAUSSRANDOM

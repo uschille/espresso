@@ -159,7 +159,6 @@ void lb_init_boundaries() {
 
     /**call of cuda fkt*/
     float* boundary_velocity = (float *) pmalloc(3*n_lb_boundaries*sizeof(float));
-
     for (n=0; n<n_lb_boundaries; n++) {
       boundary_velocity[3*n+0]=lb_boundaries[n].velocity[0];
       boundary_velocity[3*n+1]=lb_boundaries[n].velocity[1];
