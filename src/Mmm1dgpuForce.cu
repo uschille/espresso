@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include "atomic.cuh"
+#include "Mmm1dgpuForce.hpp"
+typedef mmm1dgpu_real real;
 
 #ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
 #define M_LN2f  0.6931471805599453094172321214581766
@@ -17,8 +19,6 @@
 
 int deviceCount;
 float *multigpu_factors;
-
-#include "Mmm1dgpuForce.hpp"
 
 static void HandleError(cudaError_t err, const char *file, int line)
 {

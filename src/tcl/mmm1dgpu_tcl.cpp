@@ -54,7 +54,7 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
       return TCL_ERROR;
     }
   }
-  
+
   // TODO: when does coulomb.prefactor change?
   Mmm1dgpuForce *A = new Mmm1dgpuForce(coulomb.prefactor, maxPWerror, switch_rad, bessel_cutoff);
   // using new makes sure it doesn't get destroyed when we leave tclcommand_inter_coulomb_parse_mmm1dgpu
