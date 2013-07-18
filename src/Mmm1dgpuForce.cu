@@ -5,15 +5,9 @@
 #include <sys/time.h>
 #include "atomic.cuh"
 
-#ifdef CUDA_USE_SINGLE_PRECISION
-#define M_LN2f	0.6931471805599453094172321214581766f
-#define C_GAMMAf	0.57721566490153286060651209008f
-#define C_2PIf	(2*3.14159265358979323846264338328f)
-#else
-#define M_LN2f	0.6931471805599453094172321214581766
-#define C_GAMMAf	0.57721566490153286060651209008
-#define C_2PIf	(2*3.14159265358979323846264338328)
-#endif
+#define M_LN2f	M_LN2
+#define C_GAMMAf	C_GAMMA
+#define C_2PIf	C_2PI
 
 int deviceCount;
 float *multigpu_factors;
@@ -339,15 +333,9 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 		}
 		else
 		{
-			#if defined __CUDA_ARCH__ && !defined CUDA_USE_SINGLE_PRECISION
 			atomicadd8(&force[3*p2], pref*sum_r/rxy*x);
 			atomicadd8(&force[3*p2+1], pref*sum_r/rxy*y);
 			atomicadd8(&force[3*p2+2], pref*sum_z);
-			#elif defined __CUDA_ARCH__
-			atomicadd(&force[3*p2], pref*sum_r/rxy*x);
-			atomicadd(&force[3*p2+1], pref*sum_r/rxy*y);
-			atomicadd(&force[3*p2+2], pref*sum_z);
-			#endif
 		}
 	}
 }
