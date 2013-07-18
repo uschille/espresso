@@ -11,7 +11,7 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
   int bessel_cutoff;
 
   if (argc < 2) {
-    Tcl_AppendResult(interp, "wrong # arguments: inter coulomb mmm1d <switch radius> "
+    Tcl_AppendResult(interp, "wrong # arguments: inter coulomb mmm1dgpu <switch radius> "
 		     "{<bessel cutoff>} <maximal error for near formula> | tune  <maximal pairwise error>", (char *) NULL);
     return TCL_ERROR;
   }
@@ -44,7 +44,7 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
       }
     }
     else {
-      Tcl_AppendResult(interp, "wrong # arguments: inter coulomb mmm1d <switch radius> "
+      Tcl_AppendResult(interp, "wrong # arguments: inter coulomb mmm1dgpu <switch radius> "
 		       "{<bessel cutoff>} <maximal error for near formula> | tune  <maximal pairwise error>", (char *) NULL);
       return TCL_ERROR;
     }
@@ -54,8 +54,8 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
       return TCL_ERROR;
     }
   }
-
-  // TODO: does coulomb.prefactor ever change?
+  printf("DEBUG: inter coulomb mmm1dgpu called\n");
+  // TODO: when does coulomb.prefactor change?
   Mmm1dgpuForce A(coulomb.prefactor, maxPWerror, switch_rad, bessel_cutoff);
   FI.addMethod(&A);
 
