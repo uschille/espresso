@@ -46,11 +46,15 @@ void EspressoSystemInterface::gatherParticles() {
   Cell *cell;
   Particle *p;
   int i,c,np;
+  R.clear();
+  Q.clear();
 
   for (c = 0; c < local_cells.n; c++) {
     cell = local_cells.cell[c];
     p  = cell->part;
     np = cell->n;
+    R.reserve(R.size()+np);
+    Q.reserve(Q.size()+np);
     for(i = 0; i < np; i++) {
       R.push_back(Vector3(p[i].r.p[0],p[i].r.p[1],p[i].r.p[2]));
       #ifdef ELECTROSTATICS

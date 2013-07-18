@@ -884,7 +884,7 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 		if (numBlocks > 65535)
 			numBlocks = 65535;
 					
-		cudaStreamCreate(&stream[d]);
+		HANDLE_ERROR( cudaStreamCreate(&stream[d]) );
 		HANDLE_ERROR( cudaMalloc((void**)&dev_r[d], 3*N*sizeof(real)) );
 		HANDLE_ERROR( cudaMalloc((void**)&dev_q[d], N*sizeof(real)) );
 		if (pairs)
@@ -906,6 +906,12 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 
 void Mmm1dgpuForce::run(SystemInterface &s)
 {
+	if (N != s.npart())
+	{
+		printf("Error: number of particles changed between init (%d) and run (%d).\n", N, s.npart());
+		exit(EXIT_FAILURE);
+	}
+
 	F.clear();
 	int offset = 0;
 	for (SystemInterface::const_vec_iterator &it = s.rBegin(); it != s.rEnd(); ++it)
