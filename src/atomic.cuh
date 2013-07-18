@@ -16,6 +16,7 @@ __device__ inline void atomicadd(float* address, float value)
 #endif
 }
 
+#ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
 __device__ inline void atomicadd8(double* address, double value)
 {
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 200)
@@ -31,3 +32,4 @@ __device__ inline void atomicadd8(double* address, double value)
 	atomicadd((float*) address, (float) value);
 #endif
 }
+#endif

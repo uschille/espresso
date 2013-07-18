@@ -11,7 +11,11 @@
 #define EIGEN_DONT_VECTORIZE
 #include "VectorForce.hpp"
 
+#ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
 typedef double real; // TODO this shouldn't be in the header file
+#else
+typedef float real;
+#endif
 
 #ifdef __cplusplus
 extern "C" {

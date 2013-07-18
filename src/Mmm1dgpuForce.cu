@@ -5,9 +5,15 @@
 #include <sys/time.h>
 #include "atomic.cuh"
 
-#define M_LN2f	M_LN2
-#define C_GAMMAf	C_GAMMA
-#define C_2PIf	C_2PI
+#ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
+#define M_LN2f  0.6931471805599453094172321214581766
+#define C_GAMMAf        0.57721566490153286060651209008
+#define C_2PIf  (2*3.14159265358979323846264338328)
+#else
+#define M_LN2f  0.6931471805599453094172321214581766f
+#define C_GAMMAf        0.57721566490153286060651209008f
+#define C_2PIf  (2*3.14159265358979323846264338328f)
+#endif
 
 int deviceCount;
 float *multigpu_factors;
@@ -333,9 +339,15 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 		}
 		else
 		{
+#ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
 			atomicadd8(&force[3*p2], pref*sum_r/rxy*x);
 			atomicadd8(&force[3*p2+1], pref*sum_r/rxy*y);
 			atomicadd8(&force[3*p2+2], pref*sum_z);
+#else
+			atomicadd(&force[3*p2], pref*sum_r/rxy*x);
+			atomicadd(&force[3*p2+1], pref*sum_r/rxy*y);
+			atomicadd(&force[3*p2+2], pref*sum_z);
+#endif
 		}
 	}
 }
@@ -775,9 +787,18 @@ long long mmm1dgpu_energies(const real *r, const real *q, real *energy, int N, i
 Mmm1dgpuForce::Mmm1dgpuForce(real _coulomb_prefactor, real _maxPWerror, real _far_switch_radius, int _bessel_cutoff)
 :initialized(0), N(0), coulomb_prefactor(_coulomb_prefactor), maxPWerror(_maxPWerror), far_switch_radius(_far_switch_radius), bessel_cutoff(_bessel_cutoff)
 {
-#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 200)
-	printf("Compute capability 2.0 or higher is required for double precision support.\n");
-	exit(EXIT_FAILURE);
+#if defined(ELECTROSTATICS_GPU_DOUBLE_PRECISION)
+	HANDLE_ERROR( cudaGetDeviceCount(&deviceCount) );
+	for (int i = 0; i < deviceCount; i++)
+	{
+		cudaDeviceProp devProp;
+		cudaGetDeviceProperties(&devProp, i);
+		if (devProp.major < 2)
+		{
+			printf("Compute capability 2.0 or higher is required for double precision support.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 #endif
 	mmm1dgpu_init();
 }
