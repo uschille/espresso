@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include "interaction_data.hpp"
+#include "grid.hpp"
 #include "atomic.cuh"
 #include "Mmm1dgpuForce.hpp"
 typedef mmm1dgpu_real real;
@@ -788,6 +789,12 @@ long long mmm1dgpu_energies(const real *r, const real *q, real *energy, int N, i
 Mmm1dgpuForce::Mmm1dgpuForce(real _coulomb_prefactor, real _maxPWerror, real _far_switch_radius, int _bessel_cutoff)
 :initialized(0), N(0), coulomb_prefactor(_coulomb_prefactor), maxPWerror(_maxPWerror), far_switch_radius(_far_switch_radius), bessel_cutoff(_bessel_cutoff)
 {
+	if (PERIODIC(0) || PERIODIC(1) || !PERIODIC(2))
+	{
+		printf("MMM1D requires periodicity (0,0,1)\n");
+		exit(EXIT_FAILURE);
+	}
+
 #if defined(ELECTROSTATICS_GPU_DOUBLE_PRECISION)
 	HANDLE_ERROR( cudaGetDeviceCount(&deviceCount) );
 	for (int i = 0; i < deviceCount; i++)
