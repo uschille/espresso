@@ -55,7 +55,7 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
     }
   }
 
-  // TODO: when does coulomb.prefactor change?
+  // coulomb prefactor gets updated in Mmm1dgpuForce::run(), but we still need to initialize it
   Mmm1dgpuForce *A = new Mmm1dgpuForce(coulomb.prefactor, maxPWerror, switch_rad, bessel_cutoff);
   // using new makes sure it doesn't get destroyed when we leave tclcommand_inter_coulomb_parse_mmm1dgpu
   FI.addMethod(A);
