@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <sys/time.h>
+#include "interaction_data.hpp"
 #include "atomic.cuh"
 #include "Mmm1dgpuForce.hpp"
 typedef mmm1dgpu_real real;
@@ -932,6 +933,15 @@ void Mmm1dgpuForce::run(SystemInterface &s)
 		printf("Error: number of particles changed between init (%d) and run (%d).\n", N, s.npart());
 		exit(EXIT_FAILURE);
 	}
+	if (host_boxz != s.box()[2])
+	{
+		printf("Error: box length init (%d) and run (%d).\n", host_boxz, s.box()[2]);
+		exit(EXIT_FAILURE);
+	}
+
+	// update coulomb prefactor
+	coulomb_prefactor = coulomb.prefactor;
+	mmm1dgpu_set_params(0, coulomb_prefactor);
 
 	F.clear();
 	int offset = 0;
