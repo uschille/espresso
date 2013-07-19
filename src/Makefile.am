@@ -396,6 +396,8 @@ SUFFIXES=.cu
 .cu.o:
 	$(NVCC) -c $(NVCCFLAGS) $(DEFAULT_INCLUDES) $(CPPFLAGS) $(INCLUDES) $(DEFS) -o $@ $<
 
+Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh
+
 CUDA_SOURCES = \
 	cuda_init.cu cuda_init.hpp \
 
