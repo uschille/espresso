@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
   Copyright (C) 2013 The ESPResSo project
   
@@ -28,7 +29,9 @@
 #include <cuda_runtime.h>
 #include "cuda_init.hpp"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 /** Action number for \ref mpi_get_particles. */
 #define REQ_GETPARTS  16
@@ -120,8 +123,12 @@ if (_err!=cudaSuccess){ \
   printf("CUDA error: %s\n", cudaGetErrorString(_err)); \
   fprintf(stderr, "error calling %s with dim %d %d %d in %s:%u\n", #_f, _a.x, _a.y, _a.z, __FILE__, __LINE__); \
   exit(EXIT_FAILURE); \
- }
 }
+
 #endif /* ifdef CUDA */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ifdef CUDA_COMMON_H */

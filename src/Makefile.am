@@ -396,11 +396,14 @@ SUFFIXES=.cu
 .cu.o:
 	$(NVCC) -c $(NVCCFLAGS) $(DEFAULT_INCLUDES) $(CPPFLAGS) $(INCLUDES) $(DEFS) -o $@ $<
 
-Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh interaction_data.hpp grid.hpp
+cuda_common.o: cuda_common.hpp myconfig-final.hpp
+cuda_init.o: cuda_init.hpp myconfig-final.hpp
+lbgpu.o: lbgpu.hpp myconfig-final.hpp
+p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
+Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh interaction_data.hpp grid.hpp myconfig-final.hpp
 
 CUDA_SOURCES = \
 	cuda_init.cu cuda_init.hpp \
-
 	cuda_common.cu cuda_common.hpp \
 	lbgpu.cu lbgpu.hpp \
 	p3m_gpu.cu p3m_gpu.hpp \

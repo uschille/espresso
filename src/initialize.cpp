@@ -256,11 +256,19 @@ if(this_node == 0){
       ERROR_SPRINTF(errtext,"{099 Lattice Boltzmann time step not set} ");
     }
     for(int i=0;i<LB_COMPONENTS;i++){
+<<<<<<< HEAD
        if (lbpar_gpu.rho[0] < 0.0) {
          errtext = runtime_error(128);
          ERROR_SPRINTF(errtext,"{100 Lattice Boltzmann fluid density not set} ");
        }
        if (lbpar_gpu.viscosity[0] < 0.0) {
+=======
+       if (lbpar_gpu.rho < 0.0) {
+         errtext = runtime_error(128);
+         ERROR_SPRINTF(errtext,"{100 Lattice Boltzmann fluid density not set} ");
+       }
+       if (lbpar_gpu.viscosity < 0.0) {
+>>>>>>> 3cf8907... Backported cuda_common from master
          errtext = runtime_error(128);
          ERROR_SPRINTF(errtext,"{101 Lattice Boltzmann fluid viscosity not set} ");
        }
@@ -401,7 +409,11 @@ void on_coulomb_change()
   case COULOMB_DH:
     break;    
 #ifdef P3M
+<<<<<<< HEAD
 #ifdef CUDA
+=======
+#if defined(_P3M_GPU_FLOAT) || defined(_P3M_GPU_REAL_DOUBLE)
+>>>>>>> 3cf8907... Backported cuda_common from master
   case COULOMB_P3M_GPU:
     if ( box_l[0] != box_l[1] || box_l[0] != box_l[2] ) {
       fprintf (stderr, "P3M on the GPU requires a cubic box!\n");
