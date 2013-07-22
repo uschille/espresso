@@ -30,7 +30,6 @@
 #include "config.hpp"
 #include "lbgpu.hpp"
 
-
 #ifdef LB_GPU
 #ifndef GAUSSRANDOM
 #define GAUSSRANDOM
