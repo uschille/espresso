@@ -52,8 +52,7 @@
 #include "lbgpu.hpp"
 #include "iccp3m.hpp"
 #include "p3m_gpu.hpp"
-
-//#include "AffineForce.hpp"
+#include "cuda_common.hpp"
 
 /************************************************************/
 /* local prototypes                                         */
@@ -73,12 +72,16 @@ ForceIterator FI;
 void force_calc()
 {
 
-//AffineForce A;
-//FI.addMethod(&A);
+#if defined(LB_GPU) || (defined(ELECTROSTATICS) && defined(CUDA))
+
+  copy_part_data_to_gpu();
+
+#endif
 
 FI.init();
 FI.run();
 
+<<<<<<< HEAD
 
 #if defined(LB_GPU) || (defined(ELECTROSTATICS) && defined(CUDA))
 
@@ -86,6 +89,8 @@ FI.run();
 
 #endif
     
+=======
+>>>>>>> 06b16c4... Backported cuda_common forces.c changes.
 #ifdef LB_GPU
 #ifdef SHANCHEN
   if (lattice_switch & LATTICE_LB_GPU && this_node == 0) lattice_boltzmann_calc_shanchen_gpu();
@@ -155,6 +160,13 @@ FI.run();
 #ifdef METADYNAMICS
   /* Metadynamics main function */
   meta_perform();
+<<<<<<< HEAD
+=======
+#endif
+
+#if defined(LB_GPU) || (defined(ELECTROSTATICS) && defined(CUDA))
+  copy_forces_from_GPU();
+>>>>>>> 06b16c4... Backported cuda_common forces.c changes.
 #endif
 
 #if defined(LB_GPU) || (defined(ELECTROSTATICS) && defined(CUDA))
@@ -200,7 +212,13 @@ void calc_long_range_forces()
       break;
 #ifdef CUDA
     case COULOMB_P3M_GPU:
+<<<<<<< HEAD
       if (this_node == 0) p3m_gpu_add_farfield_force();
+=======
+  #if defined(_P3M_GPU_FLOAT) || defined(_P3M_GPU_REAL_DOUBLE)
+      if (this_node == 0) p3m_gpu_add_farfield_force();
+  #endif
+>>>>>>> 06b16c4... Backported cuda_common forces.c changes.
   #ifdef NPT
       printf("NPT can not be used in conjunction with the GPU P3M\n"); //TODO fix this?
       exit(1); //TODO ALTERNATIVELY CHECK IF BAROSTAT IS ACTUALLY ON
