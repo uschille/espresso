@@ -52,10 +52,12 @@ void EspressoSystemInterface::gatherParticles() {
 
   // get particles from other nodes
   CUDA_global_part_vars* global_part_vars_host = gpu_get_global_particle_vars_pointer_host();
-  if ( global_part_vars_host->communication_enabled == 1 && global_part_vars_host->number_of_particles )
+  if ( global_part_vars_host->communication_enabled == 1)
   {
     np = global_part_vars_host->number_of_particles;
     cuda_mpi_get_particles(particle_data_host);
+    if (this_node > 0)
+      return;
     for (int i = 0; i < np; i++)
     {
        R.push_back(Vector3(particle_data_host[i].p[0], particle_data_host[i].p[1], particle_data_host[i].p[2]));

@@ -36,9 +36,6 @@ void ForceIterator::addForces() {
   Particle *p;
   int i,c,np;
 
-  if (methods.size() == 0)
-    return;
-
   puts("Adding forces.");
 
   F.reserve(System.npart());
@@ -57,11 +54,11 @@ void ForceIterator::addForces() {
 
   // send forces to other nodes
   CUDA_global_part_vars* global_part_vars_host = gpu_get_global_particle_vars_pointer_host();
-  if ( global_part_vars_host->communication_enabled == 1 && global_part_vars_host->number_of_particles )
+  if ( global_part_vars_host->communication_enabled == 1)
   {
     np = global_part_vars_host->number_of_particles;
     CUDA_particle_force *host_forces = (CUDA_particle_force *) malloc(np*sizeof(CUDA_particle_force));
-    for (int i = 0; i < np; i++)
+    if (this_node == 0) for (int i = 0; i < np; i++)
     {
       for (int d = 0; d < 3; d++)
         host_forces[i].f[d] = F[i][d];
