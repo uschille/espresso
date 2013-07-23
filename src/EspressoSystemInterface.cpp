@@ -2,6 +2,7 @@
 #include "cells.hpp"
 #include "particle_data.hpp"
 #include "grid.hpp"
+#include "cuda_common.hpp"
 
 #include <iostream>
 
@@ -49,6 +50,22 @@ void EspressoSystemInterface::gatherParticles() {
   R.clear();
   Q.clear();
 
+  // get particles from other nodes
+  CUDA_global_part_vars* global_part_vars_host = gpu_get_global_particle_vars_pointer_host();
+  if ( global_part_vars_host->communication_enabled == 1 && global_part_vars_host->number_of_particles )
+  {
+    np = global_part_vars_host->number_of_particles;
+    cuda_mpi_get_particles(particle_data_host);
+    for (int i = 0; i < np; i++)
+    {
+       R.push_back(Vector3(particle_data_host[i].p[0], particle_data_host[i].p[1], particle_data_host[i].p[2]));
+       #ifdef ELECTROSTATICS
+       Q.push_back(particle_data_host[i].q);
+       #endif
+    }
+  }
+  else // only get particles from local node
+  {
   for (c = 0; c < local_cells.n; c++) {
     cell = local_cells.cell[c];
     p  = cell->part;
@@ -63,6 +80,7 @@ void EspressoSystemInterface::gatherParticles() {
       Q.push_back(p[i].p.q);
       #endif
     }
+  }
   }
 }
 

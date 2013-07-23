@@ -220,7 +220,7 @@ extern "C" {
       cuda_mpi_get_particles(particle_data_host);
 
       /** get espresso md particle values*/
-      if ( this_node == 0 ) cudaMemcpyAsync(particle_data_device, particle_data_host, global_part_vars_host.number_of_particles * sizeof(CUDA_particle_data), cudaMemcpyHostToDevice, stream[0]);
+      if ( this_node == 0 ) cudaMemcpy(particle_data_device, particle_data_host, global_part_vars_host.number_of_particles * sizeof(CUDA_particle_data), cudaMemcpyHostToDevice);
 
     }
   }

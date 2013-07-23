@@ -80,9 +80,7 @@
   #endif
 
   #ifdef ELECTROSTATICS
-                if (coulomb.method == COULOMB_P3M_GPU) {
-                  particle_data_host[i+g].q = (float)part[i].p.q;
-                }
+                particle_data_host[i+g].q = (float)part[i].p.q;
   #endif
               }  
               g += npart;
@@ -156,9 +154,7 @@
   #endif
 
   #ifdef ELECTROSTATICS
-          if (coulomb.method == COULOMB_P3M_GPU) {
-            particle_data_host_sl[i+g].q = (float)part[i].p.q;
-          }
+          particle_data_host_sl[i+g].q = (float)part[i].p.q;
   #endif
         }
         g+=npart;
