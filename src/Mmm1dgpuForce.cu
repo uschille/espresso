@@ -841,7 +841,7 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 		far_switch_radius = s.box()[2]/2;
 	}
 
-	force = (real*) calloc(3*N, sizeof(real));
+	force = (real*) malloc(3*N*sizeof(real));
 	r = (real*) malloc(3*N*sizeof(real));
 	q = (real*) malloc(N*sizeof(real));
 	int offset = 0;
@@ -951,6 +951,7 @@ void Mmm1dgpuForce::run(SystemInterface &s)
 	mmm1dgpu_set_params(0, coulomb_prefactor);
 
 	F.clear();
+	memset(force, 0, 3*N*sizeof(real));
 	int offset = 0;
 	for (SystemInterface::const_vec_iterator &it = s.rBegin(); it != s.rEnd(); ++it)
 	{
