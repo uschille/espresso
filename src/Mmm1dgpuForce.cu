@@ -295,9 +295,9 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 		while (fabs(z) > boxz/2) // make sure we take the shortest distance
 			z -= (z > 0? 1 : -1)*boxz;
 
-		if (p1 == p2 || rxy == 0) // TODO: rxy==0 is wrong!!!
+		if (p1 == p2) // particle exerts no force on itself
 		{
-			rxy = 1; // so the multiplication at the end doesn't fail with NaNs
+			rxy = 1; // so the division at the end doesn't fail with NaN (sum_r is 0 anyway)
 		}
 		else if (rxy2 <= far_switch_radius_2) // near formula
 		{
@@ -330,6 +330,11 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 			sum_z += z*cbpow(rsqrt(rxy2+pow(z,2)));
 			sum_z += (z+boxz)*cbpow(rsqrt(rxy2+pow(z+boxz,2)));
 			sum_z += (z-boxz)*cbpow(rsqrt(rxy2+pow(z-boxz,2)));
+
+			if (rxy == 0) // particles at the same radial position only exert a force in z direction
+			{
+				rxy = 1;  // so the division at the end doesn't fail with NaN (sum_r is 0 anyway)
+			}
 		}
 		else // far formula
 		{
