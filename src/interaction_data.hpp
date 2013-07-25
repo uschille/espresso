@@ -125,6 +125,8 @@
   #define COULOMB_INTER_RF 10
   /** Coulomb method is P3M with GPU based long range part calculation */
   #define COULOMB_P3M_GPU 11
+  /** Coulomb method is GPU-based MMM1D **/
+  #define COULOMB_MMM1D_GPU 12
 #endif
 /*@}*/
 

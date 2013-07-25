@@ -1,8 +1,23 @@
 #include "mmm1dgpu_tcl.hpp"
 #include "forces.hpp"
 #include "Mmm1dgpuForce.hpp"
+#include "mmm1d.hpp"
 
 #ifdef MMM1D_GPU
+
+int tclprint_to_result_MMM1DGPU(Tcl_Interp *interp)
+{
+  char buffer[TCL_DOUBLE_SPACE];
+
+  Tcl_PrintDouble(interp, sqrt(mmm1d_params.far_switch_radius_2), buffer);
+  Tcl_AppendResult(interp, "mmm1dgpu ", buffer, " ",(char *) NULL);
+  sprintf(buffer, "%d", mmm1d_params.bessel_cutoff);
+  Tcl_AppendResult(interp, buffer, " ",(char *) NULL);
+  Tcl_PrintDouble(interp, mmm1d_params.maxPWerror, buffer);
+  Tcl_AppendResult(interp, buffer,(char *) NULL);
+
+  return TCL_OK;
+}
 
 int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char **argv)
 {
@@ -54,10 +69,19 @@ int tclcommand_inter_coulomb_parse_mmm1dgpu(Tcl_Interp *interp, int argc, char *
     }
   }
 
-  // coulomb prefactor gets updated in Mmm1dgpuForce::run()
-  Mmm1dgpuForce *A = new Mmm1dgpuForce(0, maxPWerror, switch_rad, bessel_cutoff);
-  // using new makes sure it doesn't get destroyed when we leave tclcommand_inter_coulomb_parse_mmm1dgpu
-  FI.addMethod(A);
+  static int initialized = 0;
+  if (!initialized) // inter coulomb mmm1dgpu was never called before
+  {
+    initialized = 1;
+    // coulomb prefactor gets updated in Mmm1dgpuForce::run()
+    Mmm1dgpuForce *A = new Mmm1dgpuForce(0, maxPWerror, switch_rad, bessel_cutoff);
+    // using new makes sure it doesn't get destroyed when we leave tclcommand_inter_coulomb_parse_mmm1dgpu
+    FI.addMethod(A);
+  }
+  else // we only need to update the parameters
+  {
+    mmm1dgpu_set_params(0, 0, maxPWerror,switch_rad, bessel_cutoff);
+  }
 
   return TCL_OK;
 }

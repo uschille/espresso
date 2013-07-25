@@ -7,6 +7,7 @@
 #include "grid.hpp"
 #include "atomic.cuh"
 #include "Mmm1dgpuForce.hpp"
+#include "mmm1d.hpp"
 typedef mmm1dgpu_real real;
 
 #ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
@@ -244,7 +245,10 @@ int mmm1dgpu_set_params(real _boxz, real _coulomb_prefactor, real _maxPWerror, r
 	{
 		cudaSetDevice(d);
 		if (_far_switch_radius >= 0)
+		{
 			HANDLE_ERROR( cudaMemcpyToSymbol(far_switch_radius_2, &_far_switch_radius_2, sizeof(real)) );
+			mmm1d_params.far_switch_radius_2 = _far_switch_radius*_far_switch_radius;
+		}
 		if (_boxz > 0)
 		{
 			host_boxz = _boxz;
@@ -252,11 +256,19 @@ int mmm1dgpu_set_params(real _boxz, real _coulomb_prefactor, real _maxPWerror, r
 			HANDLE_ERROR( cudaMemcpyToSymbol(uz, &_uz, sizeof(real)) );
 		}
 		if (_coulomb_prefactor != 0)
+		{
 			HANDLE_ERROR( cudaMemcpyToSymbol(coulomb_prefactor, &_coulomb_prefactor, sizeof(real)) );
+		}
 		if (_bessel_cutoff > 0)
+		{
 			HANDLE_ERROR( cudaMemcpyToSymbol(bessel_cutoff, &_bessel_cutoff, sizeof(int)) );
+			mmm1d_params.bessel_cutoff = _bessel_cutoff;
+		}
 		if (_maxPWerror > 0)
+		{
 			HANDLE_ERROR( cudaMemcpyToSymbol(maxPWerror, &_maxPWerror, sizeof(real)) );
+			mmm1d_params.maxPWerror = _maxPWerror;
+		}
 	}
 
 	if (_far_switch_radius >= 0 && _bessel_cutoff > 0)
@@ -278,12 +290,12 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 		real rxy = sqrt(rxy2);
 		real sum_r = 0, sum_z = 0;
 		
-		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctlz
+		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctly
 
 		while (fabs(z) > boxz/2) // make sure we take the shortest distance
 			z -= (z > 0? 1 : -1)*boxz;
 
-		if (p1 == p2)
+		if (p1 == p2 || rxy == 0) // TODO: rxy==0 is wrong!!!
 		{
 			rxy = 1; // so the multiplication at the end doesn't fail with NaNs
 		}
@@ -787,7 +799,7 @@ long long mmm1dgpu_energies(const real *r, const real *q, real *energy, int N, i
 /* C++ Espresso Interface code below */
 
 Mmm1dgpuForce::Mmm1dgpuForce(real _coulomb_prefactor, real _maxPWerror, real _far_switch_radius, int _bessel_cutoff)
-:initialized(0), N(0), coulomb_prefactor(_coulomb_prefactor), maxPWerror(_maxPWerror), far_switch_radius(_far_switch_radius), bessel_cutoff(_bessel_cutoff)
+:initialized(0), N(-1), coulomb_prefactor(_coulomb_prefactor), maxPWerror(_maxPWerror), far_switch_radius(_far_switch_radius), bessel_cutoff(_bessel_cutoff)
 {
 	if (PERIODIC(0) || PERIODIC(1) || !PERIODIC(2))
 	{
@@ -809,6 +821,7 @@ Mmm1dgpuForce::Mmm1dgpuForce(real _coulomb_prefactor, real _maxPWerror, real _fa
 	}
 #endif
 	mmm1dgpu_init();
+	coulomb.method = COULOMB_MMM1D_GPU;
 }
 
 Mmm1dgpuForce::~Mmm1dgpuForce()
@@ -834,7 +847,7 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 		exit(EXIT_FAILURE);
 	}
 
-	if (N == 0 && far_switch_radius < 0)
+	if (N <= 0 && far_switch_radius < 0)
 	{
 		printf("Warning: Please add particles to system before intializing.\n");
 		printf("Tuning will be disabled! Setting far switch radius to half box length.\n");
@@ -919,6 +932,10 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 		if (pairs)
 		{
 			HANDLE_ERROR( cudaMalloc((void**)&dev_force[d], 3*(tStop-tStart)*sizeof(real)) );
+			if (pairs == 2)
+			{
+				HANDLE_ERROR( cudaMalloc((void**)&dev_force[d+deviceCount], 3*N*sizeof(real)) );
+			}
 		}
 		else
 		{
@@ -935,6 +952,11 @@ void Mmm1dgpuForce::init(SystemInterface &s)
 
 void Mmm1dgpuForce::run(SystemInterface &s)
 {
+	if (coulomb.method != COULOMB_MMM1D_GPU)
+	{
+		printf("Error: It is currently not supported to disable forces using the EspressoSystemInterface.\n");
+		exit(EXIT_FAILURE);
+	}
 	if (N != s.npart())
 	{
 		printf("Error: number of particles changed between init (%d) and run (%d).\n", N, s.npart());
@@ -942,7 +964,7 @@ void Mmm1dgpuForce::run(SystemInterface &s)
 	}
 	if (host_boxz != s.box()[2])
 	{
-		printf("Error: box length init (%d) and run (%d).\n", host_boxz, s.box()[2]);
+		printf("Error: box length changed between init (%d) and run (%d).\n", host_boxz, s.box()[2]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -993,7 +1015,6 @@ void Mmm1dgpuForce::run(SystemInterface &s)
 		if (pairs == 2)
 		{
 			// call reduction kernel
-			HANDLE_ERROR( cudaMalloc((void**)&dev_force[d+deviceCount], 3*N*sizeof(real)) );
 			HANDLE_ERROR( cudaMemsetAsync(dev_force[d+deviceCount], 0, 3*N*sizeof(real), stream[d]) ); // zero out for reduction
 			vectorReductionKernel<<<N/numThreads+1, numThreads, 0, stream[d]>>>(dev_force[d], dev_force[d+deviceCount], N, tStart, tStop);
 			HANDLE_ERROR( cudaMemcpyAsync(forcePartial[d], dev_force[d+deviceCount], 3*N*sizeof(real), cudaMemcpyDeviceToHost, stream[d]) );
