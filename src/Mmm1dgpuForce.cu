@@ -8,7 +8,6 @@
 #include "atomic.cuh"
 #include "Mmm1dgpuForce.hpp"
 #include "mmm1d.hpp"
-#include "energy.hpp"
 typedef mmm1dgpu_real real;
 
 #ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
@@ -1084,8 +1083,6 @@ bool Mmm1dgpuForce::isReady()
 
 void Mmm1dgpuForce::runEnergies(SystemInterface &s)
 {
-	init_energies(&energy); // TODO: this should be done by the interface
-
 	int offset = 0;
 	for (SystemInterface::const_vec_iterator &it = s.rBegin(); it != s.rEnd(); ++it)
 	{

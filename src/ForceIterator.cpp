@@ -1,6 +1,7 @@
 #include "ForceIterator.hpp"
 #include "cells.hpp"
 #include "cuda_common.hpp"
+#include "energy.hpp"
 
 #include <stdio.h>
 
@@ -27,7 +28,10 @@ void ForceIterator::run() {
 void ForceIterator::runEnergies() {
   System.update();
   for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
+  {
+    init_energies(&(*it)->energy);
     (*it)->runEnergies(System);
+  }
 }
 
 bool ForceIterator::isReady() {
