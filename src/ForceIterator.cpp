@@ -6,6 +6,9 @@
 #include <stdio.h>
 
 void ForceIterator::addMethod(OneParticleForce *m) {
+  m->energy.data.n = 0;
+  m->energy.data.e = NULL;
+  m->energy.data.max = 0;
   methods.push_back(m);
 }
 
