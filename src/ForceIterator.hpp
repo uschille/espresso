@@ -3,6 +3,7 @@
 
 #include "EspressoSystemInterface.hpp"
 #include "OneParticleForce.hpp"
+#include "statistics.hpp"
 #include <vector>
 
 class ForceIterator {
@@ -12,6 +13,9 @@ public:
   void run();
   void addForces();
   bool isReady();
+  void runEnergies();
+  void addEnergies(Observable_stat *);
+  bool isReadyEnergies();
 protected:
   EspressoSystemInterface System;
   std::vector<OneParticleForce *> methods;

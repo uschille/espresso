@@ -42,6 +42,8 @@ public:
   void init(SystemInterface &s);
   void run(SystemInterface &s);
   bool isReady();
+  void runEnergies(SystemInterface &s);
+  bool isReadyEnergies();
   void destroy();
 private:
 	int pairs;

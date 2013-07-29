@@ -31,6 +31,7 @@
 #include "elc.hpp"
 #include "magnetic_non_p3m_methods.hpp"
 #include "mdlc_correction.hpp"
+#include "forces.hpp"
 
 Observable_stat energy = {0, {NULL,0,0}, 0,0,0};
 Observable_stat total_energy = {0, {NULL,0,0}, 0,0,0};
@@ -48,6 +49,9 @@ void energy_calc(double *result)
 {
   if (!check_obs_calc_initialized())
     return;
+
+  FI.init();
+  FI.runEnergies();
 
   init_energies(&energy);
 
@@ -73,6 +77,11 @@ void energy_calc(double *result)
   energy.data.e[0] /= (2.0*time_step*time_step);
 
   calc_long_range_energies();
+
+  while(!FI.isReadyEnergies())
+  ; // synchronize asynchronous energies
+
+  FI.addEnergies(&energy);
   
   /* gather data */
   MPI_Reduce(energy.data.e, result, energy.data.n, MPI_DOUBLE, MPI_SUM, 0, comm_cart);

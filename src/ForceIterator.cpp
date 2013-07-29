@@ -24,9 +24,22 @@ void ForceIterator::run() {
     (*it)->run(System);
 }
 
+void ForceIterator::runEnergies() {
+  System.update();
+  for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
+    (*it)->runEnergies(System);
+}
+
 bool ForceIterator::isReady() {
   for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
     if (!(*it)->isReady())
+      return false;
+  return true;
+}
+
+bool ForceIterator::isReadyEnergies() {
+  for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
+    if (!(*it)->isReadyEnergies())
       return false;
   return true;
 }
@@ -79,3 +92,16 @@ void ForceIterator::addForces() {
   }
 }
 
+void ForceIterator::addEnergies(Observable_stat *energy) {
+  for(std::vector<OneParticleForce *>::const_iterator it = methods.begin(); it != methods.end(); ++it)
+  {
+    for (int i = 0; i < 1; i++)
+      energy->bonded[i] += (*it)->energy.bonded[i];
+    for (int i = 0; i < energy->n_non_bonded; i++)
+      energy->non_bonded[i] += (*it)->energy.non_bonded[i];
+    for (int i = 0; i < energy->n_coulomb; i++)
+      energy->coulomb[i] += (*it)->energy.coulomb[i];
+    for (int i = 0; i < energy->n_dipolar; i++)
+      energy->dipolar[i] += (*it)->energy.dipolar[i];
+  }
+}

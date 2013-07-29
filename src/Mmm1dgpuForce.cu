@@ -8,6 +8,7 @@
 #include "atomic.cuh"
 #include "Mmm1dgpuForce.hpp"
 #include "mmm1d.hpp"
+#include "energy.hpp"
 typedef mmm1dgpu_real real;
 
 #ifdef ELECTROSTATICS_GPU_DOUBLE_PRECISION
@@ -969,7 +970,7 @@ void Mmm1dgpuForce::run(SystemInterface &s)
 	}
 	if (host_boxz != s.box()[2])
 	{
-		printf("Error: box length changed between init (%d) and run (%d).\n", host_boxz, s.box()[2]);
+		printf("Error: box length changed between init (%f) and run (%f).\n", host_boxz, s.box()[2]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -1078,6 +1079,34 @@ bool Mmm1dgpuForce::isReady()
 	
 	cudaSetDevice(0);
 
+	return 1;
+}
+
+void Mmm1dgpuForce::runEnergies(SystemInterface &s)
+{
+	init_energies(&energy); // TODO: this should be done by the interface
+
+	int offset = 0;
+	for (SystemInterface::const_vec_iterator &it = s.rBegin(); it != s.rEnd(); ++it)
+	{
+		for (int d = 0; d < 3; d++)
+			r[3*offset+d] = (*it)[d];
+		offset++;
+	}
+	offset = 0;
+	for (SystemInterface::const_real_iterator &it = s.qBegin(); it != s.qEnd(); ++it)
+	{
+		q[offset] = *it;
+		offset++;
+	}
+
+	real e = 0.0;
+	mmm1dgpu_energies(r, q, &e, N); // TODO: this is not asynchronous yet
+	energy.coulomb[0] = e/2;
+}
+
+bool Mmm1dgpuForce::isReadyEnergies()
+{
 	return 1;
 }
 
