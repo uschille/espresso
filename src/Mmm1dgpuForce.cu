@@ -395,7 +395,7 @@ __global__ void energiesKernel(const __restrict__ real *r, const __restrict__ re
 		while (fabs(z) > boxz/2) // make sure we take the shortest distance
 			z -= (z > 0? 1 : -1)*boxz;
 
-		if (p1 == p2)
+		if (p1 == p2) // particle exerts no force on itself
 		{
 		}
 		else if (rxy2 <= far_switch_radius_2) // near formula
@@ -417,9 +417,9 @@ __global__ void energiesKernel(const __restrict__ real *r, const __restrict__ re
 
 			sum_e *= -1*uz;
 			sum_e -= 2*uz*C_GAMMAf;
-			sum_e += 1*(rsqrt(rxy2+sqpow(z)));
-			sum_e += 1*(rsqrt(rxy2+sqpow(z+boxz)));
-			sum_e += 1*(rsqrt(rxy2+sqpow(z-boxz)));
+			sum_e += rsqrt(rxy2+sqpow(z));
+			sum_e += rsqrt(rxy2+sqpow(z+boxz));
+			sum_e += rsqrt(rxy2+sqpow(z-boxz));
 		}
 		else // far formula
 		{
@@ -608,7 +608,7 @@ long long mmm1dgpu_forces(const real *r, const real *q, real *force, int N, int 
 		
 		HANDLE_ERROR( cudaEventSynchronize(eventStop[d]) );
 		HANDLE_ERROR( cudaEventElapsedTime(&elapsedTime[d], eventStart[d], eventStop[d]) );
-		printf(">>> Calculated on GPU %d in %3.3f ms\n", d, elapsedTime[d]);
+		//printf(">>> Calculated on GPU %d in %3.3f ms\n", d, elapsedTime[d]);
 		HANDLE_ERROR( cudaEventDestroy(eventStart[d]) );
 		HANDLE_ERROR( cudaEventDestroy(eventStop[d]) );
 		
@@ -753,7 +753,7 @@ long long mmm1dgpu_energies(const real *r, const real *q, real *energy, int N, i
 		
 		HANDLE_ERROR( cudaEventSynchronize(eventStop[d]) );
 		HANDLE_ERROR( cudaEventElapsedTime(&elapsedTime[d], eventStart[d], eventStop[d]) );
-		printf(">>> Calculated on GPU %d in %3.3f ms\n", d, elapsedTime[d]);
+		//printf(">>> Calculated on GPU %d in %3.3f ms\n", d, elapsedTime[d]);
 		HANDLE_ERROR( cudaEventDestroy(eventStart[d]) );
 		HANDLE_ERROR( cudaEventDestroy(eventStop[d]) );
 		
@@ -827,6 +827,7 @@ Mmm1dgpuForce::Mmm1dgpuForce(real _coulomb_prefactor, real _maxPWerror, real _fa
 #endif
 	mmm1dgpu_init();
 	coulomb.method = COULOMB_MMM1D_GPU;
+	mpi_bcast_coulomb_params();
 }
 
 Mmm1dgpuForce::~Mmm1dgpuForce()
@@ -1083,6 +1084,26 @@ bool Mmm1dgpuForce::isReady()
 
 void Mmm1dgpuForce::runEnergies(SystemInterface &s)
 {
+	if (coulomb.method != COULOMB_MMM1D_GPU)
+	{
+		printf("Error: It is currently not supported to disable forces using the EspressoSystemInterface.\n");
+		exit(EXIT_FAILURE);
+	}
+	if (N != s.npart())
+	{
+		printf("Error: number of particles changed between init (%d) and run (%d).\n", N, s.npart());
+		exit(EXIT_FAILURE);
+	}
+	if (host_boxz != s.box()[2])
+	{
+		printf("Error: box length changed between init (%f) and run (%f).\n", host_boxz, s.box()[2]);
+		exit(EXIT_FAILURE);
+	}
+
+	// update coulomb prefactor
+	coulomb_prefactor = coulomb.prefactor;
+	mmm1dgpu_set_params(0, coulomb_prefactor);
+
 	int offset = 0;
 	for (SystemInterface::const_vec_iterator &it = s.rBegin(); it != s.rEnd(); ++it)
 	{

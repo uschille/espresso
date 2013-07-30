@@ -1794,6 +1794,7 @@ void mpi_bcast_coulomb_params_slave(int node, int parm)
 #ifdef ELECTROSTATICS
   switch (coulomb.method) {
   case COULOMB_NONE:
+  case COULOMB_MMM1D_GPU:
     break;
 #ifdef P3M
   case COULOMB_ELC_P3M:
