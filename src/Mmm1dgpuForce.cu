@@ -107,6 +107,21 @@ int modpsitest(int order, real *a, real *b, int N)
 	modpsi_destroy();
 	return 0;
 }
+
+double reductiontest(real *in, int N)
+{
+	real out = 0.0;
+	real *dev_in;
+	HANDLE_ERROR( cudaMalloc((void**)&dev_in, N*sizeof(real)) );
+	
+	HANDLE_ERROR( cudaMemcpy(dev_in, in, N*sizeof(real), cudaMemcpyHostToDevice) );
+	sumKernel<<<1,64,64*sizeof(real)>>>(dev_in, N);
+	HANDLE_ERROR( cudaMemcpy(&out, dev_in, sizeof(real), cudaMemcpyDeviceToHost) );
+	
+	cudaFree(dev_in);
+	
+	return out;
+}
 #endif
 
 int mmm1dgpu_devcount()
@@ -149,11 +164,23 @@ __global__ void sumKernel(real *data, int N)
 {
 	extern __shared__ real partialsums[];
 	if (blockIdx.x != 0) return;
-	if (threadIdx.x >= N)
-		partialsums[threadIdx.x] = 0;
-	else
-		partialsums[threadIdx.x] = data[threadIdx.x];
-	sumReduction(partialsums, data);
+	int tid = threadIdx.x;
+	real result = 0;
+	
+	for (int i = 0; i < N; i += blockDim.x)
+	{
+		if (i+tid >= N)
+			partialsums[tid] = 0;
+		else
+			partialsums[tid] = data[i+tid];
+		
+		sumReduction(partialsums, &result);
+		if (tid == 0)
+		{
+			if (i == 0) data[0] = 0;
+			data[0] += result;
+		}
+	}
 }
 
 __constant__ real far_switch_radius_2 = 0.05*0.05;
@@ -290,7 +317,7 @@ __global__ void forcesKernel(const __restrict__ real *r, const __restrict__ real
 		real rxy = sqrt(rxy2);
 		real sum_r = 0, sum_z = 0;
 		
-		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctly
+//		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctly
 
 		while (fabs(z) > boxz/2) // make sure we take the shortest distance
 			z -= (z > 0? 1 : -1)*boxz;
@@ -390,7 +417,7 @@ __global__ void energiesKernel(const __restrict__ real *r, const __restrict__ re
 		real rxy = sqrt(rxy2);
 		real sum_e = 0;
 
-		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctly
+//		if (boxz <= 0.0) return; // otherwise we'd get into an infinite loop if we're not initialized correctly
 
 		while (fabs(z) > boxz/2) // make sure we take the shortest distance
 			z -= (z > 0? 1 : -1)*boxz;
@@ -736,8 +763,7 @@ long long mmm1dgpu_energies(const real *r, const real *q, real *energy, int N, i
 		}
 		else
 		{
-			int size2 = pow(2,ceil(log2((float) numBlocks))); // Reduction only works on powers of two
-			sumKernel<<<1,size2,size2*sizeof(real)>>>(dev_energy[d], numBlocks);
+			sumKernel<<<1,64,64*sizeof(real)>>>(dev_energy[d], numBlocks);
 			HANDLE_ERROR( cudaMemcpyAsync(&energyPartial[d], dev_energy[d], sizeof(real), cudaMemcpyDeviceToHost, stream[d]) );
 		}
 

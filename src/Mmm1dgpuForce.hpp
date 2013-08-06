@@ -30,6 +30,7 @@ long long mmm1dgpu_energies(const mmm1dgpu_real *r, const mmm1dgpu_real *q, mmm1
 int besseltest(mmm1dgpu_real *a, mmm1dgpu_real *b0, mmm1dgpu_real *b1, int N);
 int modpsitest(int order, mmm1dgpu_real *a, mmm1dgpu_real *b, int N);
 void mmm1dgpu_cpp_forces(mmm1dgpu_real *r, mmm1dgpu_real *q, mmm1dgpu_real *force, int N);
+double reductiontest(mmm1dgpu_real *in, int N);
 #endif
 #ifdef __cplusplus
 }

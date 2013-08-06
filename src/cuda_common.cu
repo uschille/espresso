@@ -64,7 +64,7 @@ void _cuda_safe_mem(cudaError_t err, char *file, unsigned int line){
     _err=cudaGetLastError();
     if (_err != cudaSuccess) {
       fprintf(stderr, "Error found during memory operation. Possibly however from an failed operation before. %s:%u.\n", file, line);
-      printf("CUDA error: %s\n", cudaGetErrorString(err));
+      printf("CUDA error: %s\n", cudaGetErrorString(_err));
       if ( _err == cudaErrorInvalidValue )
 	fprintf(stderr, "You may have tried to allocate zero memory before %s:%u.\n", file, line);
       exit(EXIT_FAILURE);
