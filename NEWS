@@ -75,6 +75,8 @@ User-visible changes
 * By default, CUDA is now automatically detected and activated when it
   is there and usable.
 
+* Mmm1d is now avaiable on the GPU
+
 ESPResSo 3.1.2
 ==============
 

@@ -531,7 +531,9 @@ int tclprint_to_result_CoulombIA(Tcl_Interp *interp)
   case COULOMB_MMM1D: tclprint_to_result_MMM1D(interp); break;
   case COULOMB_MMM2D: tclprint_to_result_MMM2D(interp); break;
   case COULOMB_MAGGS: tclprint_to_result_Maggs(interp); break;
+#ifdef MMM1D_GPU
   case COULOMB_MMM1D_GPU: tclprint_to_result_MMM1DGPU(interp); break;
+#endif
   default: break;
   }
   Tcl_AppendResult(interp, "}",(char *) NULL);
