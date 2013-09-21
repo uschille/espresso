@@ -41,7 +41,6 @@ struct dummytypename {
   CUFFT_TYPE_COMPLEX *charge_mesh;
   CUFFT_TYPE_COMPLEX *force_mesh;
   REAL_TYPE *G_hat;
-  REAL_TYPE *G_hat_host;
   cufftHandle fft_plan;
   int cao, mesh;
   REAL_TYPE alpha;
@@ -72,7 +71,7 @@ __host__ __device__ inline double csinc(double d)
   }
 }
 
-__host__ __device__ void static Aliasing_sums_ik ( int cao, REAL_TYPE box, REAL_TYPE alpha, int mesh, int NX, int NY, int NZ,
+__device__ void static Aliasing_sums_ik ( int cao, REAL_TYPE box, REAL_TYPE alpha, int mesh, int NX, int NY, int NZ,
                         REAL_TYPE *Zaehler, REAL_TYPE *Nenner ) {
     REAL_TYPE S1,S2,S3;
     REAL_TYPE fak1,fak2,zwi;
@@ -111,41 +110,6 @@ __host__ __device__ void static Aliasing_sums_ik ( int cao, REAL_TYPE box, REAL_
     }
 }
 
-/* Calculate influence function */
-void static calculate_influence_function ( int cao, int mesh, REAL_TYPE box, REAL_TYPE alpha, REAL_TYPE *G_hat ) {
-
-  int    NX,NY,NZ;
-  REAL_TYPE Dnx,Dny,Dnz;
-  REAL_TYPE Zaehler[3]={0.0,0.0,0.0},Nenner=0.0;
-  REAL_TYPE zwi;
-  int ind = 0;
-  REAL_TYPE Leni = 1.0/box;
-
-  for ( NX=0; NX<mesh; NX++ ) {
-    for ( NY=0; NY<mesh; NY++ ) {
-      for ( NZ=0; NZ<mesh; NZ++ ) {
-	ind = NX*mesh*mesh + NY * mesh + NZ;
-	  
-	if ( ( NX==0 ) && ( NY==0 ) && ( NZ==0 ) )
-	  G_hat[ind]=0.0;
-	else if ( ( NX% ( mesh/2 ) == 0 ) && ( NY% ( mesh/2 ) == 0 ) && ( NZ% ( mesh/2 ) == 0 ) )
-	  G_hat[ind]=0.0;
-	else {
-	  Aliasing_sums_ik ( cao, box, alpha, mesh, NX, NY, NZ, Zaehler, &Nenner );
-		  
-	  Dnx = ( NX > mesh/2 ) ? NX - mesh : NX;
-	  Dny = ( NY > mesh/2 ) ? NY - mesh : NY;
-	  Dnz = ( NZ > mesh/2 ) ? NZ - mesh : NZ;
-	    
-	  zwi  = Dnx*Zaehler[0]*Leni + Dny*Zaehler[1]*Leni + Dnz*Zaehler[2]*Leni;
-	  zwi /= ( ( SQR ( Dnx*Leni ) + SQR ( Dny*Leni ) + SQR ( Dnz*Leni ) ) * SQR ( Nenner ) );
-	  G_hat[ind] = 2.0 * zwi / PI;
-	}
-      }
-    }
-  }
-}
-
 __global__ void calculate_influence_function_device ( int cao, int mesh, REAL_TYPE box, REAL_TYPE alpha, REAL_TYPE *G_hat ) {
 
   int    NX,NY,NZ;
@@ -155,9 +119,9 @@ __global__ void calculate_influence_function_device ( int cao, int mesh, REAL_TY
   int ind = 0;
   REAL_TYPE Leni = 1.0/box;
 
-  NX = blockDim.x * blockIdx.x + threadIdx.x;
-  NY = threadIdx.y;
-  NZ = threadIdx.z;
+  NX = blockIdx.x;
+  NY = blockIdx.y;
+  NZ = threadIdx.x;
 
   if(NX >= mesh)
     return;
@@ -541,14 +505,9 @@ extern "C" {
 	cudaFree(p3m_gpu_data.force_mesh);
 	cudaFree(p3m_gpu_data.G_hat);
 
-	free(p3m_gpu_data.G_hat_host);
-
 	cudaMalloc((void **)&(p3m_gpu_data.charge_mesh), mesh3*sizeof(CUFFT_TYPE_COMPLEX));
 	cudaMalloc((void **)&(p3m_gpu_data.force_mesh), mesh3*sizeof(CUFFT_TYPE_COMPLEX));
 	cudaMalloc((void **)&(p3m_gpu_data.G_hat), mesh3*sizeof(REAL_TYPE));
-
-	p3m_gpu_data.G_hat_host = (REAL_TYPE *)malloc(mesh3*sizeof(REAL_TYPE));
-      
 
 	cufftDestroy(p3m_gpu_data.fft_plan);
 	cufftPlan3d(&(p3m_gpu_data.fft_plan), mesh, mesh, mesh, CUFFT_PLAN_FLAG);
@@ -559,23 +518,17 @@ extern "C" {
 	cudaMalloc((void **)&(p3m_gpu_data.force_mesh), mesh3*sizeof(CUFFT_TYPE_COMPLEX));
 	cudaMalloc((void **)&(p3m_gpu_data.G_hat), mesh3*sizeof(REAL_TYPE));
 
-	p3m_gpu_data.G_hat_host = (REAL_TYPE *)malloc(mesh3*sizeof(REAL_TYPE));
-
 	cufftPlan3d(&(p3m_gpu_data.fft_plan), mesh, mesh, mesh, CUFFT_PLAN_FLAG);
       }
 
       if((reinit_if == 1) || (p3m_gpu_data_initialized == 0)) {
-      // // Calculate influence function of host.
-      // calculate_influence_function( cao, mesh, box, alpha, p3m_gpu_data.G_hat_host);
-
-      // // Copy influence function to device.
-      // cudaMemcpy( p3m_gpu_data.G_hat, p3m_gpu_data.G_hat_host, mesh3*sizeof(REAL_TYPE), cudaMemcpyHostToDevice);
 	dim3 grid(1,1,1);
 	dim3 block(1,1,1);
-        block.y = block.z = mesh;
-	block.x = 512 - mesh*mesh;
-	block.x -= block.x / 32;
-	grid.x = mesh / block.x + 1;
+
+	grid.x = mesh;
+	grid.y = mesh;
+	block.x = mesh;
+
 	calculate_influence_function_device<<<grid,block>>>(cao, mesh, box, alpha, p3m_gpu_data.G_hat);
 	cudaThreadSynchronize();
       }
