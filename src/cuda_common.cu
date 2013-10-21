@@ -20,8 +20,6 @@
 
 #include "cuda_common.hpp" //I can't go in extern C
 
-
-#include "grid.hpp"
 extern "C" {
 
 #include "config.hpp"
