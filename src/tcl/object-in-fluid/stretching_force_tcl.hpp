@@ -25,7 +25,6 @@
 /************************************************************/
 /// parse parameters for the stretching_force potential
 int tclcommand_inter_parse_stretching_force(Tcl_Interp *interp, int bond_type, int argc, char **argv);
-
 int tclprint_to_result_stretchingforceIA(Tcl_Interp *interp, Bonded_ia_parameters *params);
 
 #endif

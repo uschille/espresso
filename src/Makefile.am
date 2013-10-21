@@ -36,8 +36,9 @@ libEspresso_a_SOURCES = \
 	comforce.hpp comforce.cpp \
 	config.hpp \
 	constraint.cpp constraint.hpp \
-	cuda_common_cfile.cpp \
-	debug.cpp debug.hpp \
+	cuda_interface.cpp cuda_interface.hpp\
+	cuda_init.hpp \
+        debug.cpp debug.hpp \
 	domain_decomposition.cpp domain_decomposition.hpp \
 	energy.cpp energy.hpp \
 	errorhandling.cpp	errorhandling.hpp \
@@ -61,7 +62,7 @@ libEspresso_a_SOURCES = \
 	lb.cpp lb.hpp \
 	lb-boundaries.cpp lb-boundaries.hpp \
 	lb-d3q18.hpp lb-d3q19.hpp \
-	lbgpu_cfile.cpp \
+	lbgpu.cpp lbgpu.hpp\
 	metadynamics.cpp metadynamics.hpp \
 	modes.cpp	modes.hpp \
 	molforces.cpp molforces.hpp \
@@ -139,6 +140,7 @@ libEspresso_a_SOURCES += \
 	object-in-fluid/area_force_global.cpp object-in-fluid/area_force_global.hpp \
 	object-in-fluid/bending_force.cpp object-in-fluid/bending_force.hpp \
 	object-in-fluid/stretching_force.cpp object-in-fluid/stretching_force.hpp \
+	object-in-fluid/stretchlin_force.cpp object-in-fluid/stretchlin_force.hpp \
 	object-in-fluid/volume_force.cpp object-in-fluid/volume_force.hpp
 
 # Coulomb methods
@@ -152,7 +154,8 @@ libEspresso_a_SOURCES += \
 	mmm2d.cpp mmm2d.hpp \
 	mmm-common.cpp mmm-common.hpp \
 	p3m.cpp p3m.hpp \
-	p3m-common.cpp p3m-common.hpp \
+	p3m_gpu.hpp \
+        p3m-common.cpp p3m-common.hpp \
 	p3m-dipolar.cpp p3m-dipolar.hpp \
 	reaction_field.cpp reaction_field.hpp
 
@@ -248,6 +251,8 @@ libEspresso_a_SOURCES += \
 	tcl/object-in-fluid/bending_force_tcl.hpp \
 	tcl/object-in-fluid/stretching_force_tcl.cpp \
 	tcl/object-in-fluid/stretching_force_tcl.hpp \
+	tcl/object-in-fluid/stretchlin_force_tcl.cpp \
+	tcl/object-in-fluid/stretchlin_force_tcl.hpp \
 	tcl/object-in-fluid/volume_force_tcl.cpp \
 	tcl/object-in-fluid/volume_force_tcl.hpp
 
@@ -379,7 +384,7 @@ config-version.cpp: FORCE
 # Handling of the MPI fake implementation
 #################################################################
 if MPI_FAKE
-libEspresso_a_SOURCES += mpifake/mpi.hpp mpifake/mpi.cpp
+libEspresso_a_SOURCES += mpifake/mpi.h mpifake/mpi.cpp
 # mpifake should come before any system includes
 AM_CPPFLAGS = -I$(srcdir)/mpifake
 if TCL
@@ -403,13 +408,14 @@ p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
 Mmm1dgpuForce.o: Mmm1dgpuForce.hpp atomic.cuh mmm-common.cuh specfunc.cuh interaction_data.hpp grid.hpp myconfig-final.hpp
 
 CUDA_SOURCES = \
-	cuda_init.cu cuda_init.hpp \
-	cuda_common.cu cuda_common.hpp \
-	lbgpu.cu lbgpu.hpp \
-	p3m_gpu.cu p3m_gpu.hpp \
+	cuda_init_cuda.cu \
+	cuda_common_cuda.cu \
+	lbgpu_cuda.cu \
+	p3m_gpu_cuda.cu
 	Mmm1dgpuForce.cu Mmm1dgpuForce.hpp
 
-cuda_common.o: cuda_common.hpp myconfig-final.hpp
+
+cuda_interface.o: cuda_interface.hpp myconfig-final.hpp
 cuda_init.o: cuda_init.hpp myconfig-final.hpp
 lbgpu.o: lbgpu.hpp myconfig-final.hpp
 p3m_gpu.o: p3m_gpu.hpp myconfig-final.hpp
