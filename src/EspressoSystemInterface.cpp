@@ -2,7 +2,7 @@
 #include "cells.hpp"
 #include "particle_data.hpp"
 #include "grid.hpp"
-#include "cuda_common.hpp"
+#include "cuda_interface.hpp"
 
 #include <iostream>
 

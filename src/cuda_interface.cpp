@@ -171,7 +171,14 @@ static void cuda_mpi_get_particles_slave(){
     }
 }
 
+/* @ TODO: find more elegant solution */
+
+#ifdef SHANCHEN
   void cuda_mpi_send_forces(CUDA_particle_force *host_forces,CUDA_fluid_composition * host_composition){
+#else
+  void cuda_mpi_send_forces(CUDA_particle_force *host_forces){
+#endif
+
     int n_part;
     int g, pnode;
     Cell *cell;

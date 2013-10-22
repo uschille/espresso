@@ -287,6 +287,10 @@ void copy_forces_from_GPU() {
       KERNELCALL(reset_particle_force, dim_grid_particles, threads_per_block_particles, (particle_forces_device));
       cudaThreadSynchronize();
     }
+#ifdef SHANCHEN
     cuda_mpi_send_forces(particle_forces_host,fluid_composition_host);
+#else
+    cuda_mpi_send_forces(particle_forces_host);
+#endif
   }
 }

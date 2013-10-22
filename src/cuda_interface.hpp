@@ -92,7 +92,11 @@ void gpu_change_number_of_part_to_comm();
 void gpu_init_particle_comm();
 void cuda_mpi_get_particles(CUDA_particle_data *host_result);
 void copy_part_data_to_gpu();
+#ifdef SHANCHEN
 void cuda_mpi_send_forces(CUDA_particle_force *host_forces,CUDA_fluid_composition * host_fluid_composition);
+#else
+void cuda_mpi_send_forces(CUDA_particle_force *host_forces);
+#endif
 void cuda_bcast_global_part_params();
 
 #endif /* ifdef CUDA */

@@ -1,6 +1,6 @@
 #include "ForceIterator.hpp"
 #include "cells.hpp"
-#include "cuda_common.hpp"
+#include "cuda_interface.hpp"
 #include "energy.hpp"
 
 #include <stdio.h>
