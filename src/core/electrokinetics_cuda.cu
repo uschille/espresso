@@ -1,5 +1,5 @@
 /* 
-   Copyright (C) 2010,2011,2012,2014 The ESPResSo project
+   Copyright (C) 2010,2011,2012,2014,2015 The ESPResSo project
 
    This file is part of ESPResSo.
   
@@ -531,6 +531,11 @@ __global__ void ek_calculate_quantities( unsigned int species_index,
                ((cufftReal*)ek_parameters_gpu.charge_potential)[index]
              ) / ek_parameters_gpu.agrid;
 
+    force += -1.0f * temperature *
+      ( ek_parameters_gpu.rho[species_index][neighborindex[EK_LINK_U00]] -
+	ek_parameters_gpu.rho[species_index][index] 
+	) / ek_parameters_gpu.agrid;
+
     force *= ek_parameters_gpu.agrid *
              ek_parameters_gpu.time_step *
              ek_parameters_gpu.time_step;
@@ -578,6 +583,11 @@ __global__ void ek_calculate_quantities( unsigned int species_index,
              ( ((cufftReal*) ek_parameters_gpu.charge_potential)[neighborindex[EK_LINK_0U0]] -
                ((cufftReal*) ek_parameters_gpu.charge_potential)[index]
              ) / ek_parameters_gpu.agrid;
+
+    force += -1.0f * temperature *
+      ( ek_parameters_gpu.rho[species_index][neighborindex[EK_LINK_0U0]] -
+	ek_parameters_gpu.rho[species_index][index] 
+	) / ek_parameters_gpu.agrid;
 
     force *= ek_parameters_gpu.agrid *
              ek_parameters_gpu.time_step *
@@ -627,6 +637,11 @@ __global__ void ek_calculate_quantities( unsigned int species_index,
              ( ((cufftReal*) ek_parameters_gpu.charge_potential)[neighborindex[EK_LINK_00U]] -
                ((cufftReal*) ek_parameters_gpu.charge_potential)[index]
              ) / ek_parameters_gpu.agrid;
+
+    force += -1.0f * temperature *
+      ( ek_parameters_gpu.rho[species_index][neighborindex[EK_LINK_00U]] -
+	ek_parameters_gpu.rho[species_index][index] 
+	) / ek_parameters_gpu.agrid;
 
     force *= ek_parameters_gpu.agrid *
              ek_parameters_gpu.time_step *
